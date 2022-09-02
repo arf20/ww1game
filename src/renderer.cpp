@@ -8,7 +8,10 @@
 
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
-std::vector<texture> terrainTextures;
+
+namespace Assets {
+    std::vector<TerrainVariant> terrainVariants;
+}
 
 void initSDL() {
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
