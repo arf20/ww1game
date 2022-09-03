@@ -31,6 +31,7 @@ namespace Assets {
         int id;
         std::string name;
         std::string terrainVariantName;
+        int width, height;
         std::vector<std::string> map;
     };
 
@@ -52,13 +53,16 @@ namespace Assets {
 extern SDL_Window *window;
 extern SDL_Renderer *renderer;
 
+extern SDL_Texture *missingTextureTexture;
+
 extern std::vector<Assets::TerrainVariant>::iterator selectedTerrainVariant;
-extern std::vector<Map>::iterator selectedMap;
+extern std::vector<Assets::Map>::iterator selectedMap;
 
 // == Global functions
 // Renderer
 void initSDL();
 void destroySDL();
+void renderSetup();
 void renderLoop();
 
 // Loader

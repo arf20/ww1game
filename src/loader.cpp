@@ -108,6 +108,9 @@ void loadMaps() {
                 }
             }
 
+            m.width = m.map[0].length();
+            m.height = m.map.size();
+
             campaign.maps.push_back(m);
         }
 
@@ -120,6 +123,12 @@ void loadMaps() {
 void loadAssets() {
     if (!std::filesystem::exists(ASSET_PATH))
         exit_error("Asset directory does not exist");
+
+    if (!std::filesystem::exists(ASSET_PATH "/missing_texture.png"))
+        exit_error("Missing texture placeholder texture missing");
+
+     if ((missingTextureTexture = IMG_LoadTexture(renderer, ASSET_PATH "/missing_texture.png")) == NULL)
+        exit_error_img("IMG_LoadTexture failed on missing_texture");
 
     loadTerrains();
     loadMaps();

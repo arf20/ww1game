@@ -26,9 +26,10 @@ make install
 ## Asset directory structure (example)
 ```
 assets/
+ - missing_texture.png     #* something to render in case a texture is missing so you know its missing, 32x32
  - terrain/                #* terrain variants
     - summer/              #  variant (naming convention is lowercase and '_' separated)
-       - a_dirt.png        #  texture (first character is the texture id, make sure they are all unique like this)
+       - a_dirt.png        #  texture (first character is the texture id, make sure they are all unique like this) 32x32
        - b_uphill.png
        - c_downhill.png
  - campaigns/              #* campaigns
@@ -38,7 +39,7 @@ assets/
  - factions/               #* factions
     - german_empire/       #  faction
        - rifleman/         #  rank
-          - idle.png       #* repose texture
+          - idle.png       #* idle texture
           - walk/          #* walking animation, contains N.png N starting at 0
              - 0.png       #  animation frame texture
              - 1.png

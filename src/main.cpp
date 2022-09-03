@@ -15,7 +15,7 @@ void printAssets() {
     for (const Assets::Campaign& c : Assets::campaigns) {
         std::cout << "\t\t" << c.name << ": \"" << c.nameNice << "\" [" << c.maps.size() << "]:" << std::endl;
         for (const Assets::Map& m : c.maps)
-            std::cout << "\t\t\t" << m.id << ": \"" << m.name << "\" " << m.terrainVariantName << " " << m.map[0].length() << "x" << m.map.size() << std::endl;
+            std::cout << "\t\t\t" << m.id << ": \"" << m.name << "\" " << m.terrainVariantName << " " << m.width << "x" << m.height << std::endl;
     }
 }
 
@@ -26,6 +26,10 @@ int main(int argc, const char **argv) {
     loadAssets();
     printAssets();
 
+    selectedTerrainVariant = Assets::terrainVariants.begin();
+    selectedMap = Assets::campaigns[0].maps.begin();
+
+    renderSetup();
     renderLoop();
     
     destroySDL();
