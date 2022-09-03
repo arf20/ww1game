@@ -9,9 +9,8 @@
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
 
-namespace Assets {
-    std::vector<TerrainVariant> terrainVariants;
-}
+std::vector<Assets::TerrainVariant>::iterator selectedTerrainVariant;
+std::vector<Map>::iterator selectedMap;
 
 void initSDL() {
     if (SDL_Init(SDL_INIT_VIDEO) < 0)

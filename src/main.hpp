@@ -18,6 +18,7 @@
 namespace Assets {
     struct Texture {
         std::string name;
+        int width, height;
         SDL_Texture *texture;
     };
 
@@ -25,15 +26,34 @@ namespace Assets {
         std::string name;
         std::vector<Texture> terrainTextures;
     };
+
+    struct Map {
+        int id;
+        std::string name;
+        std::string terrainVariantName;
+        std::vector<std::string> map;
+    };
+
+    struct Campaign {
+        std::string name;
+        std::string nameNice;
+        std::vector<Map> maps;
+    };
 }
 
 // == Global vars
+// owned by loader
+namespace Assets {
+    extern std::vector<TerrainVariant> terrainVariants;
+    extern std::vector<Campaign> campaigns;
+}
+
+// owned by renderer
 extern SDL_Window *window;
 extern SDL_Renderer *renderer;
 
-namespace Assets {
-    extern std::vector<TerrainVariant> terrainVariants;
-}
+extern std::vector<Assets::TerrainVariant>::iterator selectedTerrainVariant;
+extern std::vector<Map>::iterator selectedMap;
 
 // == Global functions
 // Renderer
@@ -55,7 +75,15 @@ inline void exit_error_sdl(const char *msg) {
     exit(1);
 }
 
+inline void error_sdl(const char *msg) {
+    std::cout << msg << ": " << SDL_GetError() << std::endl;
+}
+
 inline void exit_error_img(const char *msg) {
     std::cout << msg << ": " << IMG_GetError() << std::endl;
     exit(1);
+}
+
+inline void error_img(const char *msg) {
+    std::cout << msg << ": " << IMG_GetError() << std::endl;
 }

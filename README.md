@@ -24,20 +24,21 @@ make install
 ```
 
 ## Asset directory structure (example)
-assets
+```
+assets/
  - terrain/                #* terrain variants
-    - summer/              #  variant
-       - a_dirt.png        #  texture
+    - summer/              #  variant (naming convention is lowercase and '_' separated)
+       - a_dirt.png        #  texture (first character is the texture id, make sure they are all unique like this)
        - b_uphill.png
        - c_downhill.png
  - campaigns/              #* campaigns
-    - western_front/       #  campaign (displays "Western Front") contains filenames N.map N starting at 0
+    - western_front/       #  campaign (naming convention is lowercase and '_' separated, displays "Western Front") contains filenames N.map N starting at 0
        - 0.map             #  map (according to the format specification below, includes a title like "Cambrei")
        - 1.map
  - factions/               #* factions
     - german_empire/       #  faction
        - rifleman/         #  rank
-          - standing.png   #* repose texture
+          - idle.png       #* repose texture
           - walk/          #* walking animation, contains N.png N starting at 0
              - 0.png       #  animation frame texture
              - 1.png
@@ -50,5 +51,19 @@ assets
           - death/         #* death animation
              - 0.png
              - 1.png
-
+```
 *Fixed
+
+## Map file format specification
+```
+Cambrei                                                         # map title
+summer                                                          # terrain variation
+      cbbbe                                                     # map matrix
+     cdaaafe                                    cbbe     
+    cdaaaaafe                                  cdaafe    
+bbbbdaaaaaaafbbbbghibbbbbghibbbbbbbbbbbbbghibbbdaaaafbbbb
+aaaaaaaaaaaaaaaaaajaaaaaaajaaaaaaaaaaaaaaajaaaaaaaaaaaaaa
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+```
+The first line is the map title, and the second is the terrain variation. 
+Then the map is described by a matrix of characters which correspond with the first letter of the terrain texture filename.
