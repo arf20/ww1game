@@ -7,7 +7,7 @@ void printAssets() {
     std::cout << "\tTerrain variants [" << Assets::terrainVariants.size() << "]:" << std::endl;
     for (const Assets::TerrainVariant& tvar : Assets::terrainVariants) {
         std::cout << "\t\t" << tvar.name << " [" << tvar.terrainTextures.size() << "]:" << std::endl;
-        for (const Assets::Texture& tx : tvar.terrainTextures)
+        for (const Assets::Tile& tx : tvar.terrainTextures)
             std::cout << "\t\t\t" << tx.name[0] << ": " << tx.name << " " << tx.width << "x" << tx.height << std::endl;
     }
 
@@ -17,6 +17,17 @@ void printAssets() {
         for (const Assets::Map& m : c.maps)
             std::cout << "\t\t\t" << m.id << ": \"" << m.name << "\" " << m.terrainVariantName << " " << m.width << "x" << m.height << std::endl;
     }
+
+    std::cout << "\tFactions [" << Assets::factions.size() << "]:" << std::endl;
+    for (const Assets::Faction& f : Assets::factions) {
+        std::cout << "\t\t" << f.name << ": \"" << f.nameNice << "\" [" << f.characters.size() << "]:" << std::endl;
+        for (const Assets::Character& c : f.characters)
+            std::cout << "\t\t\t" << c.name << ": \"" << c.nameNice << "\" idle walk[" << c.walk.size() << "] fire[" << c.fire.size() << "] death[" << c.death.size() << "] " << c.width << "x" << c.height << std::endl;
+    }
+
+    std::cout << "\tFonts [" << Assets::fonts.size() << "]:" << std::endl;
+    for (const Assets::Font& f : Assets::fonts)
+        std::cout << "\t\t" << f.name << ": " << f.size << std::endl;
 }
 
 int main(int argc, const char **argv) {

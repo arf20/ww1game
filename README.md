@@ -52,6 +52,8 @@ assets/
           - death/         #* death animation
              - 0.png
              - 1.png
+ - fonts/                  #* font directory
+    - default.ttf          #* default font
 ```
 *Fixed
 
@@ -68,3 +70,11 @@ aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 ```
 The first line is the map title, and the second is the terrain variation. 
 Then the map is described by a matrix of characters which correspond with the first letter of the terrain texture filename.
+
+## Todo
+```
+Soldiers
+ - Animation
+ - Movement
+Scroll
+```
