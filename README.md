@@ -26,34 +26,46 @@ make install
 ## Asset directory structure (example)
 ```
 assets/
- - missing_texture.png     #* something to render in case a texture is missing so you know its missing, 32x32
- - terrain/                #* terrain variants
-    - summer/              #  variant (naming convention is lowercase and '_' separated)
-       - a_dirt.png        #  texture (first character is the texture id, make sure they are all unique like this) 32x32
+ - missing_texture.png        #* something to render in case a texture is missing so you know its missing, 32x32
+ - terrain/                   #* terrain variants
+    - summer/                 #  variant (naming convention is lowercase and '_' separated)
+       - a_dirt.png           #  texture (first character is the texture id, make sure they are all unique like this) 32x32
        - b_uphill.png
        - c_downhill.png
- - campaigns/              #* campaigns
-    - western_front/       #  campaign (naming convention is lowercase and '_' separated, displays "Western Front") contains filenames N.map N starting at 0
-       - 0.map             #  map (according to the format specification below, includes a title like "Cambrei")
+ - campaigns/                 #* campaigns
+    - western_front/          #  campaign (naming convention is lowercase and '_' separated, displays "Western Front") contains filenames N.map N starting at 0
+       - 0.map                #  map (according to the format specification below, includes a title like "Cambrei")
        - 1.map
- - factions/               #* factions
-    - german_empire/       #  faction
-       - rifleman/         #  rank
-          - idle.png       #* idle texture
-          - walk/          #* walking animation, contains N.png N starting at 0
-             - 0.png       #  animation frame texture
+ - factions/                  #* factions
+    - german_empire/          #  faction
+       - rifleman/            #  rank
+          - idle.png          #* idle texture
+          - walk/             #* walking animation, contains N.png N starting at 0
+             - 0.png          #  animation frame texture
              - 1.png
              - 2.png
              - 3.png
-          - fire/          #* firing animation
+          - fire/             #* firing animation
              - 0.png
              - 1.png
              - 2.png
-          - death/         #* death animation
+          - death/            #* death animation
              - 0.png
              - 1.png
- - fonts/                  #* font directory
-    - default.ttf          #* default font
+ - fonts/                     #* font directory
+    - default.ttf             #* default font
+ - sounds/                    #* sound files
+    - music/                  #* music tracks
+       - menu.ogg             #* track for the menu
+       - factions/
+          - british_empire/   #  music for specific faction
+             - victory.ogg    #* to be played on victory
+             - 0.ogg          #  N.ogg N starting at 0 is to be played randomly during gameplay
+    - sfx/                    #* sound effects
+       - factions/            #* 
+          - british_empire/   #  per faction
+             - rifleman/      #  per rank
+                - fire.ogg    #* weapon fire sound
 ```
 *Fixed
 
