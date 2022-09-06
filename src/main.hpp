@@ -66,7 +66,7 @@ enum soldier_state { IDLE, MARCHING, FIRING, DYING };
 
 namespace Game {
     struct Soldier {
-        bool enemy;
+        bool enemy; // (false = friend)
         int x, y;
         std::vector<Assets::Character>::iterator character;
         soldier_state prevState, state;  // 0 idle, 1 running, 2 firing, 3 dying

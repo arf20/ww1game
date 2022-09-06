@@ -4,7 +4,6 @@ namespace Game {
     std::vector<Soldier> soldiers;
 }
 
-
 void gameUpdate() {
     
 }
