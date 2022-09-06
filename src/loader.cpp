@@ -183,7 +183,7 @@ void loadCharacters() {
 
             if (!std::filesystem::exists(entryCharacter.path() / "walk")) {
                 std::cout << "Warning: No walk animation for " << character.name << std::endl;
-                character.walk.push_back(missingTextureTexture);
+                character.march.push_back(missingTextureTexture);
             }
 
             if (!std::filesystem::exists(entryCharacter.path() / "fire")) {
@@ -196,7 +196,7 @@ void loadCharacters() {
                 character.death.push_back(missingTextureTexture);
             }
 
-            loadCharacterAnimation(entryCharacter.path() / "walk", character.walk);
+            loadCharacterAnimation(entryCharacter.path() / "walk", character.march);
             loadCharacterAnimation(entryCharacter.path() / "fire", character.fire);
             loadCharacterAnimation(entryCharacter.path() / "death", character.death);
 

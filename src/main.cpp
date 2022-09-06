@@ -22,7 +22,7 @@ void printAssets() {
     for (const Assets::Faction& f : Assets::factions) {
         std::cout << "\t\t" << f.name << ": \"" << f.nameNice << "\" [" << f.characters.size() << "]:" << std::endl;
         for (const Assets::Character& c : f.characters)
-            std::cout << "\t\t\t" << c.name << ": \"" << c.nameNice << "\" idle walk[" << c.walk.size() << "] fire[" << c.fire.size() << "] death[" << c.death.size() << "] " << c.width << "x" << c.height << std::endl;
+            std::cout << "\t\t\t" << c.name << ": \"" << c.nameNice << "\" idle walk[" << c.march.size() << "] fire[" << c.fire.size() << "] death[" << c.death.size() << "] " << c.width << "x" << c.height << std::endl;
     }
 
     std::cout << "\tFonts [" << Assets::fonts.size() << "]:" << std::endl;
@@ -39,6 +39,15 @@ int main(int argc, const char **argv) {
 
     selectedTerrainVariant = Assets::terrainVariants.begin();
     selectedMap = Assets::campaigns[0].maps.begin();
+
+    Game::Soldier soldier;
+    soldier.enemy = false;
+    soldier.x = 50;
+    soldier.y = 50;
+    soldier.character = Assets::factions[0].characters.begin();
+    soldier.state = soldier_state::MARCHING;
+    soldier.frameCounter = 0;
+    Game::soldiers.push_back(soldier);
 
     renderSetup();
     renderLoop();

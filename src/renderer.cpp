@@ -23,7 +23,7 @@ void renderTexture(SDL_Texture *t, int w, int h, int x, int y) {
 #define TEXT_CENTERY    (unsigned int)2
 
 int renderText(std::string str, TTF_Font* font, int x, int y, unsigned int flags, SDL_Color color) {
-    SDL_Surface* surfaceText = TTF_RenderText_Solid(font, str.c_str(), color);
+    SDL_Surface* surfaceText = TTF_RenderText_Shaded(font, str.c_str(), color, {0, 0, 0, 0});
     SDL_Texture* textureText = SDL_CreateTextureFromSurface(renderer, surfaceText);
 
     SDL_Rect rectText;  // create a rect
@@ -60,18 +60,49 @@ std::vector<Assets::Font>::iterator defaultFont;
 // local stuff
 #define TILE_SIZE   32
 
+#define ANIM_FPS    7
+
 float fps = 0.0f;
+Uint32 time_prev = 0;
+long frameCounter = 0;
+int anim_div = 0;
 
 int screenWidth = 1280;
 int screenHeight = 720;
 
-int worldOrgX = 0, mapOrgY = 0;
+int worldOrgX = 0, worldOrgY = 0;
 
 void renderMap() {
     for (int y = 0; y < selectedMap->height; y++) {
         for (int x = 0; x < selectedMap->width; x++) {
             if (selectedMap->map[y][x] == ' ') continue;
-            renderTexture(getMapTexture(selectedMap->map[y][x]), TILE_SIZE, TILE_SIZE, worldOrgX + (TILE_SIZE * x), mapOrgY + (TILE_SIZE * y));
+            renderTexture(getMapTexture(selectedMap->map[y][x]), TILE_SIZE, TILE_SIZE, worldOrgX + (TILE_SIZE * x), worldOrgY + (TILE_SIZE * y));
+        }
+    }
+}
+
+void renderSoldiers() {
+    for (auto it = Game::soldiers.begin(); it != Game::soldiers.end(); it++) {
+        auto& soldier = *it;
+        switch (soldier.state) {
+            case soldier_state::IDLE: {
+                renderTexture(soldier.character->idle, soldier.character->width, soldier.character->height, soldier.x, soldier.y);
+            } break;
+            case soldier_state::MARCHING: {
+                if (soldier.frameCounter == soldier.character->march.size()) soldier.frameCounter = 0;
+                renderTexture(soldier.character->march[soldier.frameCounter], soldier.character->width, soldier.character->height, soldier.x, soldier.y);
+                if ((frameCounter % anim_div) == 0) soldier.frameCounter++;
+            } break;
+            case soldier_state::FIRING: {
+                if (soldier.frameCounter == soldier.character->fire.size()) { soldier.state = soldier.prevState; continue; }
+                renderTexture(soldier.character->fire[soldier.frameCounter], soldier.character->width, soldier.character->height, soldier.x, soldier.y);
+                if ((frameCounter % anim_div) == 0) soldier.frameCounter++;
+            } break;
+            case soldier_state::DYING: {
+                if (soldier.frameCounter == soldier.character->death.size()) { Game::soldiers.erase(it); continue; }
+                renderTexture(soldier.character->death[soldier.frameCounter], soldier.character->width, soldier.character->height, soldier.x, soldier.y);
+                if ((frameCounter % anim_div) == 0) soldier.frameCounter++;
+            } break;
         }
     }
 }
@@ -81,8 +112,10 @@ void renderSetup() {
 }
 
 void render() {
-    mapOrgY = screenHeight - (TILE_SIZE * selectedMap->height);
+    worldOrgY = screenHeight - (TILE_SIZE * selectedMap->height);
+
     renderMap();
+    renderSoldiers();
 
     renderText(std::string("fps: ") + std::to_string(fps), defaultFont->font, 10, 10, 0, { 255, 255, 255, 255 });
 }
@@ -92,7 +125,13 @@ void renderLoop() {
     bool run = true;
     SDL_Event event;
     while (run) {
-        Uint32 start_time = SDL_GetTicks();
+        Uint32 time_now = SDL_GetTicks();
+        Uint32 frame_time = time_now - time_prev;
+        fps = (frame_time > 0) ? 1000.0f / frame_time : 0.0f;
+        if (fps == 0.0f) fps = 1.0;
+        anim_div = std::roundl(fps / (float)ANIM_FPS);
+        time_prev = time_now;
+
         while (SDL_PollEvent(&event)) {
             switch (event.type) {
                 case SDL_KEYDOWN: {
@@ -116,11 +155,12 @@ void renderLoop() {
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
         SDL_RenderClear(renderer);
 
+        gameUpdate();
         render();
 
         SDL_RenderPresent(renderer);
-        Uint32 frame_time = SDL_GetTicks() - start_time;
-        fps = (frame_time > 0) ? 1000.0f / frame_time : 0.0f;
+
+        frameCounter++;
     }
 }
 

@@ -44,7 +44,7 @@ namespace Assets {
         std::string nameNice;
         int width, height;
         SDL_Texture *idle;
-        std::vector<SDL_Texture*> walk;
+        std::vector<SDL_Texture*> march;
         std::vector<SDL_Texture*> fire;
         std::vector<SDL_Texture*> death;
     };
@@ -62,6 +62,18 @@ namespace Assets {
     };
 }
 
+enum soldier_state { IDLE, MARCHING, FIRING, DYING };
+
+namespace Game {
+    struct Soldier {
+        bool enemy;
+        int x, y;
+        std::vector<Assets::Character>::iterator character;
+        soldier_state prevState, state;  // 0 idle, 1 running, 2 firing, 3 dying
+        int frameCounter;
+    };
+}
+
 // == Global vars
 // owned by loader
 namespace Assets {
@@ -69,6 +81,11 @@ namespace Assets {
     extern std::vector<Campaign> campaigns;
     extern std::vector<Faction> factions;
     extern std::vector<Font> fonts;
+}
+
+// owned by game
+namespace Game {
+    extern std::vector<Soldier> soldiers;
 }
 
 // owned by renderer
@@ -90,6 +107,9 @@ void renderLoop();
 
 // Loader
 void loadAssets();
+
+// Game
+void gameUpdate();
 
 // Inline util
 inline void exit_error(const std::string& msg) {
