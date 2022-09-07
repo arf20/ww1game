@@ -177,6 +177,7 @@ void loadCharacters() {
             Assets::Character character;
             character.name = entryCharacter.path().stem();
             character.nameNice = makeNameNice(character.name);
+            character.fireSnd = missingSoundSound;
 
             if (!std::filesystem::exists(entryCharacter.path() / "idle.png")) {
                 std::cout << "Warning: No idle texture for " << character.name << std::endl;
@@ -263,17 +264,20 @@ void loadSounds() {
 
             auto faction = getFactionByName(factionName);
             if (faction == Assets::factions.end()) {
-                std::cout << "Warning: Faction does not exist while loading sounds:" << characterName << std::endl;
+                std::cout << "Warning: Faction does not exist while loading sounds: " << factionName << std::endl;
+                continue;
             }
 
             auto character = getCharacterByNameAndFaction(characterName, faction);
             if (character == faction->characters.end()) {
-                std::cout << "Warning: Character does not exist while loading sounds:" << characterName << std::endl;
+                std::cout << "Warning: Character does not exist while loading sounds: " << characterName << std::endl;
+                continue;
             }
 
-            if (std::filesystem::exists(entryCharacter.path() / "fire.ogg")) {
+            if (!std::filesystem::exists(entryCharacter.path() / "fire.ogg")) {
                 std::cout << "Warning: No fire sound for " << character->name << std::endl;
                 character->fireSnd = missingSoundSound;
+                continue;
             }
 
             if ((character->fireSnd = Mix_LoadWAV((entryCharacter.path() / "fire.ogg").c_str())) == NULL) {
@@ -298,9 +302,9 @@ void loadAssets() {
     if ((missingSoundSound = Mix_LoadWAV(ASSET_PATH "/missing_sound.ogg")) == NULL)
         exit_error_sdl("Mix_LoadWAV failed on missing_sound");
 
-
     loadTerrains();
     loadMaps();
     loadCharacters();
     loadFonts();
+    loadSounds();
 }
