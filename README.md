@@ -38,7 +38,7 @@ assets/
        - 1.map
  - factions/                  #* factions
     - german_empire/          #  faction
-       - rifleman/            #  rank
+       - rifleman/            #  character
           - idle.png          #* idle texture
           - walk/             #* walking animation, contains N.png N starting at 0
              - 0.png          #  animation frame texture
@@ -55,6 +55,7 @@ assets/
  - fonts/                     #* font directory
     - default.ttf             #* default font
  - sounds/                    #* sound files
+    - missing_sound.ogg       #* missing sound sound
     - music/                  #* music tracks
        - menu.ogg             #* track for the menu
        - factions/
@@ -63,8 +64,8 @@ assets/
              - 0.ogg          #  N.ogg N starting at 0 is to be played randomly during gameplay
     - sfx/                    #* sound effects
        - factions/            #* 
-          - british_empire/   #  per faction
-             - rifleman/      #  per rank
+          - british_empire/   #  per faction (must exist in assets/factions/)
+             - rifleman/      #  per character
                 - fire.ogg    #* weapon fire sound
 ```
 *Fixed

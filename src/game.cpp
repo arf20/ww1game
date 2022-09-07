@@ -7,6 +7,11 @@ namespace Game {
 constexpr float gravity = 200.0f;
 constexpr float marchVelocity = 55.0f;
 
+void soldiersFire(const std::vector<Game::Soldier>::iterator& soldier) {
+    soldier->prevState = soldier->state;
+    soldier->state = SoldierState::FIRING;
+    Mix_PlayChannel(-1, soldier->character->fireSnd, 0);
+}
 
 void gameUpdate(float deltaTime) {
     for (Game::Soldier& soldier : Game::soldiers) {

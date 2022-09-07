@@ -23,6 +23,18 @@ std::string makeNameNice(std::string str) {
     return str;
 }
 
+std::vector<Assets::Faction>::iterator getFactionByName(std::string name) {
+    for (auto it = Assets::factions.begin(); it < Assets::factions.end(); it++)
+        if (it->name == name) return it;
+    return Assets::factions.end();
+}
+
+std::vector<Assets::Character>::iterator getCharacterByNameAndFaction(std::string name, std::vector<Assets::Faction>::iterator faction) {
+    for (auto it = faction->characters.begin(); it < faction->characters.end(); it++)
+        if (it->name == name) return it;
+    return faction->characters.end();
+}
+
 void loadTerrains() {
     if (!std::filesystem::exists(ASSET_PATH "/terrain"))
         exit_error("Terrain directory does not exist");
@@ -228,6 +240,51 @@ void loadFonts() {
         if (Assets::fonts[i].name == "default") defaultFont = Assets::fonts.begin() + i;
 }
 
+void loadSounds() {
+    if (!std::filesystem::exists(ASSET_PATH "/sounds"))
+        exit_error("Sounds directory does not exist");
+
+    if (!std::filesystem::exists(ASSET_PATH "/sounds/sfx"))
+        exit_error("Sfx directory does not exist");
+
+    if (!std::filesystem::exists(ASSET_PATH "/sounds/sfx/factions"))
+        exit_error("Sfx/factions directory does not exist");
+
+    if (!std::filesystem::exists(ASSET_PATH "/sounds/music"))
+        exit_error("Music directory does not exist");
+
+    for (const auto& entryFaction : std::filesystem::directory_iterator(ASSET_PATH "/sounds/sfx/factions")) {
+        if (!entryFaction.is_directory()) continue;
+        std::string factionName = entryFaction.path().filename();
+
+        for (const auto& entryCharacter : std::filesystem::directory_iterator(entryFaction.path().string())) {
+            if (!entryCharacter.is_directory()) continue;
+            std::string characterName = entryCharacter.path().filename();
+
+            auto faction = getFactionByName(factionName);
+            if (faction == Assets::factions.end()) {
+                std::cout << "Warning: Faction does not exist while loading sounds:" << characterName << std::endl;
+            }
+
+            auto character = getCharacterByNameAndFaction(characterName, faction);
+            if (character == faction->characters.end()) {
+                std::cout << "Warning: Character does not exist while loading sounds:" << characterName << std::endl;
+            }
+
+            if (std::filesystem::exists(entryCharacter.path() / "fire.ogg")) {
+                std::cout << "Warning: No fire sound for " << character->name << std::endl;
+                character->fireSnd = missingSoundSound;
+            }
+
+            if ((character->fireSnd = Mix_LoadWAV((entryCharacter.path() / "fire.ogg").c_str())) == NULL) {
+                std::cout << "Error opening " << (entryCharacter.path() / "fire.ogg").string() << " " << SDL_GetError() << std::endl;
+                character->fireSnd = missingSoundSound;
+            }
+        }
+
+    }
+}
+
 void loadAssets() {
     if (!std::filesystem::exists(ASSET_PATH))
         exit_error("Asset directory does not exist");
@@ -237,6 +294,10 @@ void loadAssets() {
 
      if ((missingTextureTexture = IMG_LoadTexture(renderer, ASSET_PATH "/missing_texture.png")) == NULL)
         exit_error_img("IMG_LoadTexture failed on missing_texture");
+
+    if ((missingSoundSound = Mix_LoadWAV(ASSET_PATH "/missing_sound.ogg")) == NULL)
+        exit_error_sdl("Mix_LoadWAV failed on missing_sound");
+
 
     loadTerrains();
     loadMaps();

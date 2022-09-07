@@ -5,6 +5,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
+#include <SDL2/SDL_mixer.h>
 
 // util functions
 SDL_Texture* getMapTexture(char c) {
@@ -52,6 +53,7 @@ SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
 
 SDL_Texture* missingTextureTexture;
+Mix_Chunk* missingSoundSound;
 
 std::vector<Assets::TerrainVariant>::iterator selectedTerrainVariant;
 std::vector<Assets::Map>::iterator selectedMap;
@@ -92,7 +94,7 @@ void renderSoldiers() {
                 if ((frameCounter % anim_div) == 0) soldier.frameCounter++;
             } break;
             case SoldierState::FIRING: {
-                if (soldier.frameCounter == soldier.character->fire.size()) { soldier.state = soldier.prevState; continue; }
+                if (soldier.frameCounter == soldier.character->fire.size()) { soldier.state = soldier.prevState; soldier.frameCounter = 0; continue; }
                 renderTexture(soldier.character->fire[soldier.frameCounter], soldier.character->width, soldier.character->height, worldOrgX + soldier.x, worldOrgY + soldier.y);
                 if ((frameCounter % anim_div) == 0) soldier.frameCounter++;
             } break;
@@ -141,6 +143,9 @@ void renderLoop() {
                         case SDLK_d: {
                             worldOrgX -= 10;
                         } break;
+                        case SDLK_z: {
+                            soldiersFire(Game::soldiers.begin());
+                        } break;
                     }
                 } break;
                 case SDL_QUIT: {
@@ -164,7 +169,7 @@ void renderLoop() {
 }
 
 void initSDL() {
-    if (SDL_Init(SDL_INIT_VIDEO) < 0)
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0)
         exit_error_sdl("SDL_Init failed");
 
     if ((window = SDL_CreateWindow("www1game", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, screenWidth, screenHeight, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE)) == NULL)
@@ -179,12 +184,20 @@ void initSDL() {
 
     if (TTF_Init() < 0)
         exit_error_sdl("TTF_Init failed");
+
+    int mixFlags = MIX_INIT_OGG;
+    if (!(Mix_Init(mixFlags) & mixFlags))
+        exit_error_sdl("Mix_Init failed");
+
+    if (Mix_OpenAudio(48000, MIX_DEFAULT_FORMAT, 2, 4096) < 0)
+        exit_error_sdl("Mix_OpenAudio failed");
 }
 
 void destroySDL() {
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
 
+    Mix_Quit();
     TTF_Quit();
     IMG_Quit();
     SDL_Quit();

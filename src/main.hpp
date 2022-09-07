@@ -4,6 +4,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
+#include <SDL2/SDL_mixer.h>
 
 #include <iostream>
 #include <vector>
@@ -49,6 +50,7 @@ namespace Assets {
         std::vector<SDL_Texture*> march;
         std::vector<SDL_Texture*> fire;
         std::vector<SDL_Texture*> death;
+        Mix_Chunk *fireSnd;
     };
 
     struct Faction {
@@ -96,6 +98,7 @@ extern SDL_Window *window;
 extern SDL_Renderer *renderer;
 
 extern SDL_Texture *missingTextureTexture;
+extern Mix_Chunk* missingSoundSound;
 
 extern std::vector<Assets::TerrainVariant>::iterator selectedTerrainVariant;
 extern std::vector<Assets::Map>::iterator selectedMap;
@@ -112,6 +115,7 @@ void renderLoop();
 void loadAssets();
 
 // Game
+void soldiersFire(const std::vector<Game::Soldier>::iterator& soldier);
 void gameUpdate(float deltaTime);
 
 // Inline util

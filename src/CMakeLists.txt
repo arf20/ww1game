@@ -11,4 +11,4 @@ file (GLOB SRC
 
 add_executable(ww1game ${SRC})
 
-target_link_libraries(ww1game PRIVATE Threads::Threads SDL2main SDL2 SDL2_ttf SDL2_image GL)
+target_link_libraries(ww1game PRIVATE Threads::Threads SDL2main SDL2 SDL2_ttf SDL2_image SDL2_mixer GL)
