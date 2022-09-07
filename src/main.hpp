@@ -12,6 +12,8 @@
 // == Macros
 #define ASSET_PATH  "../assets"
 
+#define TILE_SIZE   32
+
 // == Types
 namespace Assets {
     struct Tile {
@@ -62,14 +64,15 @@ namespace Assets {
     };
 }
 
-enum soldier_state { IDLE, MARCHING, FIRING, DYING };
+enum SoldierState { IDLE, MARCHING, FIRING, DYING };
 
 namespace Game {
     struct Soldier {
         bool enemy; // (false = friend)
         int x, y;
+        int vx, vy;
         std::vector<Assets::Character>::iterator character;
-        soldier_state prevState, state;  // 0 idle, 1 running, 2 firing, 3 dying
+        SoldierState prevState, state;  // 0 idle, 1 running, 2 firing, 3 dying
         int frameCounter;
     };
 }
@@ -109,7 +112,7 @@ void renderLoop();
 void loadAssets();
 
 // Game
-void gameUpdate();
+void gameUpdate(float deltaTime);
 
 // Inline util
 inline void exit_error(const std::string& msg) {

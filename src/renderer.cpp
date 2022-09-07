@@ -58,8 +58,6 @@ std::vector<Assets::Map>::iterator selectedMap;
 std::vector<Assets::Font>::iterator defaultFont;
 
 // local stuff
-#define TILE_SIZE   32
-
 #define ANIM_FPS    7
 
 float fps = 0.0f;
@@ -85,22 +83,22 @@ void renderSoldiers() {
     for (auto it = Game::soldiers.begin(); it != Game::soldiers.end(); it++) {
         auto& soldier = *it;
         switch (soldier.state) {
-            case soldier_state::IDLE: {
-                renderTexture(soldier.character->idle, soldier.character->width, soldier.character->height, soldier.x, soldier.y);
+            case SoldierState::IDLE: {
+                renderTexture(soldier.character->idle, soldier.character->width, soldier.character->height, worldOrgX + soldier.x, worldOrgY + soldier.y);
             } break;
-            case soldier_state::MARCHING: {
+            case SoldierState::MARCHING: {
                 if (soldier.frameCounter == soldier.character->march.size()) soldier.frameCounter = 0;
-                renderTexture(soldier.character->march[soldier.frameCounter], soldier.character->width, soldier.character->height, soldier.x, soldier.y);
+                renderTexture(soldier.character->march[soldier.frameCounter], soldier.character->width, soldier.character->height, worldOrgX + soldier.x, worldOrgY + soldier.y);
                 if ((frameCounter % anim_div) == 0) soldier.frameCounter++;
             } break;
-            case soldier_state::FIRING: {
+            case SoldierState::FIRING: {
                 if (soldier.frameCounter == soldier.character->fire.size()) { soldier.state = soldier.prevState; continue; }
-                renderTexture(soldier.character->fire[soldier.frameCounter], soldier.character->width, soldier.character->height, soldier.x, soldier.y);
+                renderTexture(soldier.character->fire[soldier.frameCounter], soldier.character->width, soldier.character->height, worldOrgX + soldier.x, worldOrgY + soldier.y);
                 if ((frameCounter % anim_div) == 0) soldier.frameCounter++;
             } break;
-            case soldier_state::DYING: {
+            case SoldierState::DYING: {
                 if (soldier.frameCounter == soldier.character->death.size()) { Game::soldiers.erase(it); continue; }
-                renderTexture(soldier.character->death[soldier.frameCounter], soldier.character->width, soldier.character->height, soldier.x, soldier.y);
+                renderTexture(soldier.character->death[soldier.frameCounter], soldier.character->width, soldier.character->height, worldOrgX + soldier.x, worldOrgY + soldier.y);
                 if ((frameCounter % anim_div) == 0) soldier.frameCounter++;
             } break;
         }
@@ -126,10 +124,11 @@ void renderLoop() {
     SDL_Event event;
     while (run) {
         Uint32 time_now = SDL_GetTicks();
-        Uint32 frame_time = time_now - time_prev;
-        fps = (frame_time > 0) ? 1000.0f / frame_time : 0.0f;
+        Uint32 deltaTime = time_now - time_prev;
+        fps = (deltaTime > 0) ? 1000.0f / deltaTime : 0.0f;
         if (fps == 0.0f) fps = 1.0;
         anim_div = std::roundl(fps / (float)ANIM_FPS);
+        if (anim_div == 0.0f) anim_div = 1.0;
         time_prev = time_now;
 
         while (SDL_PollEvent(&event)) {
@@ -155,7 +154,7 @@ void renderLoop() {
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
         SDL_RenderClear(renderer);
 
-        gameUpdate();
+        gameUpdate(float(deltaTime) / 1000.0f);
         render();
 
         SDL_RenderPresent(renderer);

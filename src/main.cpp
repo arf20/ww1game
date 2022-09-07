@@ -43,9 +43,10 @@ int main(int argc, const char **argv) {
     Game::Soldier soldier;
     soldier.enemy = false;
     soldier.x = 50;
-    soldier.y = 50;
+    soldier.y = -50;
+    soldier.vx = soldier.vy = 0.0f;
     soldier.character = Assets::factions[0].characters.begin();
-    soldier.state = soldier_state::MARCHING;
+    soldier.state = SoldierState::MARCHING;
     soldier.frameCounter = 0;
     Game::soldiers.push_back(soldier);
 
