@@ -22,8 +22,9 @@ void spawnSoldier(const std::string& faction, const std::string& rank) {
 }
 
 void soldierFire(const std::vector<Game::Soldier>::iterator& soldier) {
-    soldier->prevState = soldier->state;
-    soldier->state = Game::Soldier::SoldierState::FIRING;
+    if (soldier->state != Game::Soldier::FIRING) soldier->prevState = soldier->state;
+    soldier->state = Game::Soldier::FIRING;
+    soldier->frameCounter = 0;
     Mix_PlayChannel(-1, soldier->character->fireSnd, 0);
 }
 
@@ -62,10 +63,14 @@ void gameUpdate(float deltaTime) {
     for (Game::Soldier& soldier : Game::soldiers) {
         for (int i = 1; i < Game::mapPath.size(); i++) {
             if (Game::mapPath[i].pos.x > soldier.pos.x + (soldier.character->size.x / 2.0f)) {
-                if (Game::mapPath[i - 1].type == Game::MapPathPoint::GROUND)
-                    soldier.state = Game::Soldier::MARCHING;
-                else
-                    soldier.state = Game::Soldier::IDLE;
+                if (soldier.state != Game::Soldier::FIRING)
+                    if (Game::mapPath[i - 1].type == Game::MapPathPoint::GROUND) {
+                        soldier.prevState = soldier.state;
+                        soldier.state = Game::Soldier::MARCHING;
+                    } else {
+                        soldier.prevState = soldier.state;
+                        soldier.state = Game::Soldier::IDLE;
+                    }
 
                 if (soldier.state == Game::Soldier::SoldierState::MARCHING) {
                     vector center = soldier.pos;

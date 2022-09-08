@@ -93,22 +93,24 @@ void renderSoldiers() {
     for (auto it = Game::soldiers.begin(); it != Game::soldiers.end(); it++) {
         auto& soldier = *it;
         switch (soldier.state) {
-            case Game::Soldier::SoldierState::IDLE: {
-                renderTexture(soldier.character->idle, soldier.character->size.x, soldier.character->size.y, worldOrgX + soldier.pos.x, worldOrgY + soldier.pos.y);
-            } break;
-            case Game::Soldier::SoldierState::MARCHING: {
-                if (soldier.frameCounter == soldier.character->march.size()) soldier.frameCounter = 0;
-                renderTexture(soldier.character->march[soldier.frameCounter], soldier.character->size.x, soldier.character->size.y, worldOrgX + soldier.pos.x, worldOrgY + soldier.pos.y);
-                if ((frameCounter % anim_div) == 0) soldier.frameCounter++;
-            } break;
-            case Game::Soldier::SoldierState::FIRING: {
-                if (soldier.frameCounter == soldier.character->fire.size()) { soldier.state = soldier.prevState; soldier.frameCounter = 0; continue; }
+            case Game::Soldier::FIRING: {
+                if (soldier.frameCounter >= soldier.character->fire.size()) { soldier.state = soldier.prevState; soldier.frameCounter = 0;
+                    renderTexture(soldier.character->idle, soldier.character->size.x, soldier.character->size.y, worldOrgX + soldier.pos.x, worldOrgY + soldier.pos.y);
+                    continue; }
                 renderTexture(soldier.character->fire[soldier.frameCounter], soldier.character->size.x, soldier.character->size.y, worldOrgX + soldier.pos.x, worldOrgY + soldier.pos.y);
                 if ((frameCounter % anim_div) == 0) soldier.frameCounter++;
             } break;
             case Game::Soldier::SoldierState::DYING: {
-                if (soldier.frameCounter == soldier.character->death.size()) { Game::soldiers.erase(it); continue; }
+                if (soldier.frameCounter >= soldier.character->death.size()) { Game::soldiers.erase(it); continue; }
                 renderTexture(soldier.character->death[soldier.frameCounter], soldier.character->size.x, soldier.character->size.y, worldOrgX + soldier.pos.x, worldOrgY + soldier.pos.y);
+                if ((frameCounter % anim_div) == 0) soldier.frameCounter++;
+            } break;
+            case Game::Soldier::SoldierState::IDLE: {
+                renderTexture(soldier.character->idle, soldier.character->size.x, soldier.character->size.y, worldOrgX + soldier.pos.x, worldOrgY + soldier.pos.y);
+            } break;
+            case Game::Soldier::SoldierState::MARCHING: {
+                if (soldier.frameCounter >= soldier.character->march.size()) soldier.frameCounter = 0;
+                renderTexture(soldier.character->march[soldier.frameCounter], soldier.character->size.x, soldier.character->size.y, worldOrgX + soldier.pos.x, worldOrgY + soldier.pos.y);
                 if ((frameCounter % anim_div) == 0) soldier.frameCounter++;
             } break;
         }
@@ -159,8 +161,10 @@ void renderLoop() {
                                 }
                         } break;
                         case SDLK_1: {
-                            //soldierFire(Game::soldiers.begin());
                             spawnSoldier("german_empire", "officer");
+                        } break;
+                        case SDLK_z: {
+                            soldierFire(Game::soldiers.begin());
                         } break;
                     }
                 } break;
@@ -172,7 +176,7 @@ void renderLoop() {
 
         SDL_GetWindowSize(window, &screenWidth, &screenHeight);
 
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
+        SDL_SetRenderDrawColor(renderer, 0, 240, 240, SDL_ALPHA_OPAQUE);
         SDL_RenderClear(renderer);
 
         gameUpdate(deltaTime);
