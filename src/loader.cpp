@@ -177,10 +177,13 @@ void loadCharacters() {
                 character.idle = missingTextureTexture;
             }
 
-            if (SDL_QueryTexture(character.idle, NULL, NULL, &character.width, &character.height) < 0) {
+            int width, height;
+            if (SDL_QueryTexture(character.idle, NULL, NULL, &width, &height) < 0) {
                 error_sdl("SDL_QueryTexture failed on assets/" + faction.name + "/" + character.name + "/idle.png");
                 character.idle = missingTextureTexture;
+                character.size.x = 32.0f; character.size.y = 32.0f;
             }
+            character.size.x = width; character.size.y = height;
 
             if (!std::filesystem::exists(entryCharacter.path() / "walk")) {
                 std::cout << "Warning: No walk animation for " << character.name << std::endl;

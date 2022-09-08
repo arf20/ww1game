@@ -73,7 +73,7 @@ namespace Assets {
     struct Character {
         std::string name;
         std::string nameNice;
-        int width, height;
+        vector size;
         SDL_Texture *idle;
         std::vector<SDL_Texture*> march;
         std::vector<SDL_Texture*> fire;
@@ -119,6 +119,7 @@ namespace Assets {
 // owned by game
 namespace Game {
     extern std::vector<Soldier> soldiers;
+    extern std::vector<vector> mapPath;
 }
 
 // owned by renderer

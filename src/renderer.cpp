@@ -80,6 +80,11 @@ void renderMap() {
             renderTexture(getMapTexture(selectedMap->map[y][x]), TILE_SIZE, TILE_SIZE, worldOrgX + (TILE_SIZE * x), worldOrgY + (TILE_SIZE * y));
         }
     }
+
+    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+    for (int i = 0; i < Game::mapPath.size() - 1; i++) {
+        SDL_RenderDrawLineF(renderer, worldOrgX + Game::mapPath[i].x, worldOrgY + Game::mapPath[i].y, worldOrgX + Game::mapPath[i + 1].x, worldOrgY + Game::mapPath[i + 1].y);
+    }
 }
 
 void renderSoldiers() {
@@ -87,21 +92,21 @@ void renderSoldiers() {
         auto& soldier = *it;
         switch (soldier.state) {
             case SoldierState::IDLE: {
-                renderTexture(soldier.character->idle, soldier.character->width, soldier.character->height, worldOrgX + soldier.pos.x, worldOrgY + soldier.pos.y);
+                renderTexture(soldier.character->idle, soldier.character->size.x, soldier.character->size.y, worldOrgX + soldier.pos.x, worldOrgY + soldier.pos.y);
             } break;
             case SoldierState::MARCHING: {
                 if (soldier.frameCounter == soldier.character->march.size()) soldier.frameCounter = 0;
-                renderTexture(soldier.character->march[soldier.frameCounter], soldier.character->width, soldier.character->height, worldOrgX + soldier.pos.x, worldOrgY + soldier.pos.y);
+                renderTexture(soldier.character->march[soldier.frameCounter], soldier.character->size.x, soldier.character->size.y, worldOrgX + soldier.pos.x, worldOrgY + soldier.pos.y);
                 if ((frameCounter % anim_div) == 0) soldier.frameCounter++;
             } break;
             case SoldierState::FIRING: {
                 if (soldier.frameCounter == soldier.character->fire.size()) { soldier.state = soldier.prevState; soldier.frameCounter = 0; continue; }
-                renderTexture(soldier.character->fire[soldier.frameCounter], soldier.character->width, soldier.character->height, worldOrgX + soldier.pos.x, worldOrgY + soldier.pos.y);
+                renderTexture(soldier.character->fire[soldier.frameCounter], soldier.character->size.x, soldier.character->size.y, worldOrgX + soldier.pos.x, worldOrgY + soldier.pos.y);
                 if ((frameCounter % anim_div) == 0) soldier.frameCounter++;
             } break;
             case SoldierState::DYING: {
                 if (soldier.frameCounter == soldier.character->death.size()) { Game::soldiers.erase(it); continue; }
-                renderTexture(soldier.character->death[soldier.frameCounter], soldier.character->width, soldier.character->height, worldOrgX + soldier.pos.x, worldOrgY + soldier.pos.y);
+                renderTexture(soldier.character->death[soldier.frameCounter], soldier.character->size.x, soldier.character->size.y, worldOrgX + soldier.pos.x, worldOrgY + soldier.pos.y);
                 if ((frameCounter % anim_div) == 0) soldier.frameCounter++;
             } break;
         }
@@ -112,13 +117,13 @@ void renderSetup() {
     
 }
 
-void render() {
+void render(float deltaTime) {
     worldOrgY = screenHeight - (TILE_SIZE * selectedMap->height);
 
     renderMap();
     renderSoldiers();
 
-    renderText(std::string("fps: ") + std::to_string(fps), defaultFont->font, 10, 10, 0, { 255, 255, 255, 255 });
+    renderText(std::string("fps: ") + std::to_string(fps) + " deltaTime: " + std::to_string(deltaTime), defaultFont->font, 10, 10, 0, { 255, 255, 255, 255 });
 }
 
 // public functions
@@ -161,7 +166,7 @@ void renderLoop() {
         SDL_RenderClear(renderer);
 
         gameUpdate(deltaTime);
-        render();
+        render(deltaTime);
 
         SDL_RenderPresent(renderer);
 
