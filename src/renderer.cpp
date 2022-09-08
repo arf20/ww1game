@@ -189,7 +189,7 @@ void initSDL() {
     if (!(Mix_Init(mixFlags) & mixFlags))
         exit_error_sdl("Mix_Init failed");
 
-    if (Mix_OpenAudio(48000, MIX_DEFAULT_FORMAT, 2, 4096) < 0)
+    if (Mix_OpenAudio(48000, MIX_DEFAULT_FORMAT, 2, 1024) < 0)
         exit_error_sdl("Mix_OpenAudio failed");
 }
 
