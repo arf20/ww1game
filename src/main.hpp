@@ -94,20 +94,26 @@ namespace Assets {
     };
 }
 
-enum SoldierState { IDLE, MARCHING, FIRING, DYING };
-
 namespace Game {
     struct Soldier {
         bool enemy; // (false = friend)
         vector pos;
         vector vel;
         std::vector<Assets::Character>::iterator character;
-        SoldierState prevState, state;  // 0 idle, 1 running, 2 firing, 3 dying
+        enum SoldierState { IDLE, MARCHING, FIRING, DYING } prevState, state;  // 0 idle, 1 running, 2 firing, 3 dying
         int frameCounter;
+    };
+
+    struct MapPathPoint {
+        enum PointType { GROUND, TRENCH } type;
+        vector pos;
     };
 }
 
 // == Global vars
+// owned by main
+extern bool debug;
+
 // owned by loader
 namespace Assets {
     extern std::vector<TerrainVariant> terrainVariants;
@@ -119,7 +125,7 @@ namespace Assets {
 // owned by game
 namespace Game {
     extern std::vector<Soldier> soldiers;
-    extern std::vector<vector> mapPath;
+    extern std::vector<MapPathPoint> mapPath;
 }
 
 // owned by renderer

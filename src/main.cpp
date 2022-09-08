@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+bool debug = true;
+
 void printAssets() {
     std::cout << "Assets:" << std::endl;
     std::cout << "\tTerrain variants [" << Assets::terrainVariants.size() << "]:" << std::endl;
@@ -42,8 +44,6 @@ int main(int argc, const char **argv) {
     selectedMap = Assets::campaigns[0].maps.begin();
 
     gameSetup();
-
-    spawnSoldier("german_empire", "officer");
 
     renderSetup();
     renderLoop();

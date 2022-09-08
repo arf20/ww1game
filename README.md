@@ -32,6 +32,7 @@ assets/
        - a_dirt.png           #  texture (first character is the texture id, make sure they are all unique like this) 32x32
        - b_uphill.png
        - c_downhill.png
+       - t_trench             #* id 't' is special for marking a trench
  - campaigns/                 #* campaigns
     - western_front/          #  campaign (naming convention is lowercase and '_' separated, displays "Western Front") contains filenames N.map N starting at 0
        - 0.map                #  map (according to the format specification below, includes a title like "Cambrei")
