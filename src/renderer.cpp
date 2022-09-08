@@ -1,6 +1,7 @@
 #include "main.hpp"
 
 #include <iostream>
+#include <chrono>
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
@@ -63,7 +64,7 @@ std::vector<Assets::Font>::iterator defaultFont;
 #define ANIM_FPS    7
 
 float fps = 0.0f;
-Uint32 time_prev = 0;
+std::chrono::_V2::system_clock::time_point time_prev = std::chrono::high_resolution_clock::now();
 long frameCounter = 0;
 int anim_div = 0;
 
@@ -125,10 +126,10 @@ void renderLoop() {
     bool run = true;
     SDL_Event event;
     while (run) {
-        Uint32 time_now = SDL_GetTicks();
-        Uint32 deltaTime = time_now - time_prev;
-        fps = (deltaTime > 0) ? 1000.0f / deltaTime : 0.0f;
-        if (fps == 0.0f) fps = 1.0;
+        //Uint32 time_now = SDL_GetTicks();
+        std::chrono::_V2::system_clock::time_point time_now = std::chrono::high_resolution_clock::now();
+        float deltaTime = (time_now - time_prev).count() / 1000000000.0f;
+        fps = (deltaTime > 0.0f) ? 1.0f / deltaTime : 1.0f;
         anim_div = std::roundl(fps / (float)ANIM_FPS);
         if (anim_div == 0.0f) anim_div = 1.0;
         time_prev = time_now;
@@ -159,7 +160,7 @@ void renderLoop() {
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
         SDL_RenderClear(renderer);
 
-        gameUpdate(float(deltaTime) / 1000.0f);
+        gameUpdate(deltaTime);
         render();
 
         SDL_RenderPresent(renderer);
