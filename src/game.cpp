@@ -39,6 +39,7 @@ void findMapPath() {
             Game::mapPath.push_back({float(TILE_SIZE * mx), float(TILE_SIZE * my)});
         prevmy = my;
     }
+    // TODO remove duplicates
 }
 
 void gameSetup() {
@@ -49,8 +50,10 @@ void gameUpdate(float deltaTime) {
     for (Game::Soldier& soldier : Game::soldiers) {
         if (soldier.state == SoldierState::MARCHING) {
             for (int i = 0; i < Game::mapPath.size(); i++) {
-                if (Game::mapPath[i].x > soldier.pos.x + soldier.character->size.x) {
-                    soldier.pos += (Game::mapPath[i] - (soldier.pos + soldier.character->size)).unit() * (deltaTime * marchVelocity);
+                if (Game::mapPath[i].x > soldier.pos.x + (soldier.character->size.x / 2.0f)) {
+                    vector center = soldier.pos;
+                    center.x += soldier.character->size.x / 2.0f; center.y += soldier.character->size.y;
+                    soldier.pos += (Game::mapPath[i] - center).unit() * (deltaTime * marchVelocity);
                     break;
                 }
             }

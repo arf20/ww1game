@@ -84,6 +84,8 @@ aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 The first line is the map title, and the second is the terrain variation. 
 Then the map is described by a matrix of characters which correspond with the first letter of the terrain texture filename.
 
+On map load, a path through the map is found, in which soldiers travel by their bottom center point.
+
 ## Todo
 ```
 Soldiers

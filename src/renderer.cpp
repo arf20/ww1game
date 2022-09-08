@@ -80,11 +80,6 @@ void renderMap() {
             renderTexture(getMapTexture(selectedMap->map[y][x]), TILE_SIZE, TILE_SIZE, worldOrgX + (TILE_SIZE * x), worldOrgY + (TILE_SIZE * y));
         }
     }
-
-    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-    for (int i = 0; i < Game::mapPath.size() - 1; i++) {
-        SDL_RenderDrawLineF(renderer, worldOrgX + Game::mapPath[i].x, worldOrgY + Game::mapPath[i].y, worldOrgX + Game::mapPath[i + 1].x, worldOrgY + Game::mapPath[i + 1].y);
-    }
 }
 
 void renderSoldiers() {
