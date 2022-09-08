@@ -86,21 +86,21 @@ void renderSoldiers() {
         auto& soldier = *it;
         switch (soldier.state) {
             case SoldierState::IDLE: {
-                renderTexture(soldier.character->idle, soldier.character->width, soldier.character->height, worldOrgX + soldier.x, worldOrgY + soldier.y);
+                renderTexture(soldier.character->idle, soldier.character->width, soldier.character->height, worldOrgX + soldier.pos.x, worldOrgY + soldier.pos.y);
             } break;
             case SoldierState::MARCHING: {
                 if (soldier.frameCounter == soldier.character->march.size()) soldier.frameCounter = 0;
-                renderTexture(soldier.character->march[soldier.frameCounter], soldier.character->width, soldier.character->height, worldOrgX + soldier.x, worldOrgY + soldier.y);
+                renderTexture(soldier.character->march[soldier.frameCounter], soldier.character->width, soldier.character->height, worldOrgX + soldier.pos.x, worldOrgY + soldier.pos.y);
                 if ((frameCounter % anim_div) == 0) soldier.frameCounter++;
             } break;
             case SoldierState::FIRING: {
                 if (soldier.frameCounter == soldier.character->fire.size()) { soldier.state = soldier.prevState; soldier.frameCounter = 0; continue; }
-                renderTexture(soldier.character->fire[soldier.frameCounter], soldier.character->width, soldier.character->height, worldOrgX + soldier.x, worldOrgY + soldier.y);
+                renderTexture(soldier.character->fire[soldier.frameCounter], soldier.character->width, soldier.character->height, worldOrgX + soldier.pos.x, worldOrgY + soldier.pos.y);
                 if ((frameCounter % anim_div) == 0) soldier.frameCounter++;
             } break;
             case SoldierState::DYING: {
                 if (soldier.frameCounter == soldier.character->death.size()) { Game::soldiers.erase(it); continue; }
-                renderTexture(soldier.character->death[soldier.frameCounter], soldier.character->width, soldier.character->height, worldOrgX + soldier.x, worldOrgY + soldier.y);
+                renderTexture(soldier.character->death[soldier.frameCounter], soldier.character->width, soldier.character->height, worldOrgX + soldier.pos.x, worldOrgY + soldier.pos.y);
                 if ((frameCounter % anim_div) == 0) soldier.frameCounter++;
             } break;
         }
@@ -144,7 +144,7 @@ void renderLoop() {
                             worldOrgX -= 10;
                         } break;
                         case SDLK_z: {
-                            soldiersFire(Game::soldiers.begin());
+                            soldierFire(Game::soldiers.begin());
                         } break;
                     }
                 } break;

@@ -23,18 +23,6 @@ std::string makeNameNice(std::string str) {
     return str;
 }
 
-std::vector<Assets::Faction>::iterator getFactionByName(std::string name) {
-    for (auto it = Assets::factions.begin(); it < Assets::factions.end(); it++)
-        if (it->name == name) return it;
-    return Assets::factions.end();
-}
-
-std::vector<Assets::Character>::iterator getCharacterByNameAndFaction(std::string name, std::vector<Assets::Faction>::iterator faction) {
-    for (auto it = faction->characters.begin(); it < faction->characters.end(); it++)
-        if (it->name == name) return it;
-    return faction->characters.end();
-}
-
 void loadTerrains() {
     if (!std::filesystem::exists(ASSET_PATH "/terrain"))
         exit_error("Terrain directory does not exist");

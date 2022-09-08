@@ -2,42 +2,50 @@
 
 namespace Game {
     std::vector<Soldier> soldiers;
+    std::vector<vector> mapPath;
 }
 
 constexpr float gravity = 200.0f;
-constexpr float marchVelocity = 55.0f;
+constexpr float marchVelocity = 1.0f;
 
-void soldiersFire(const std::vector<Game::Soldier>::iterator& soldier) {
+// manipulate soldiers
+void soldierFire(const std::vector<Game::Soldier>::iterator& soldier) {
     soldier->prevState = soldier->state;
     soldier->state = SoldierState::FIRING;
     Mix_PlayChannel(-1, soldier->character->fireSnd, 0);
 }
 
+void spawnSoldier(const std::string& faction, const std::string& rank) {
+    Game::Soldier soldier;
+    soldier.enemy = false;
+    soldier.pos = Game::mapPath[0];
+    soldier.vel = { 0.0f, 0.0f };
+    soldier.character = getCharacterByNameAndFaction(rank, getFactionByName(faction));
+    soldier.state = SoldierState::MARCHING;
+    soldier.frameCounter = 0;
+    Game::soldiers.push_back(soldier);
+}
+
+void findMapPath() {
+    for (int mx = 0; mx < selectedMap->width; mx++) {
+        int my = 0;
+        while (selectedMap->map[my][mx] == ' ') { my++; }
+        Game::mapPath.push_back({TILE_SIZE * mx, TILE_SIZE * my});
+    }
+}
+
+void gameSetup() {
+    findMapPath();
+}
+
 void gameUpdate(float deltaTime) {
     for (Game::Soldier& soldier : Game::soldiers) {
-        soldier.vy += deltaTime * gravity;
-
-        float brcx = soldier.x + soldier.character->width;
-        float brcy = soldier.y + soldier.character->height;
-
-        if (!((brcy < 0) || (brcy / TILE_SIZE >= selectedMap->height) || (brcx < 0) || (brcx / TILE_SIZE >= selectedMap->width)))
-            if (selectedMap->map[brcy / TILE_SIZE][brcx / TILE_SIZE] != ' ')  // collision with floor
-                soldier.vy = 0;
-
-        // if this point is inside a solid tile, climb uphill
-        float uphill_cpy = brcy - 10;
-        float uphill_cpx = brcx - 20;
-
-        if (!((uphill_cpy < 0) || (uphill_cpy / TILE_SIZE >= selectedMap->height) || (uphill_cpx < 0) || (uphill_cpx / TILE_SIZE >= selectedMap->width)))
-            if (selectedMap->map[uphill_cpy / TILE_SIZE][uphill_cpx / TILE_SIZE] != ' ')  // collision with uphill
-                soldier.vy = -marchVelocity;
-
-        if (soldier.state == SoldierState::MARCHING)
-            soldier.vx = marchVelocity;
-        else
-            soldier.vx = 0;
-
-        soldier.x += deltaTime * soldier.vx;
-        soldier.y += deltaTime * soldier.vy;
+        if (soldier.state == SoldierState::MARCHING) {
+            for (int i = 0; i < Game::mapPath.size(); i++) {
+                if (Game::mapPath[i].x > soldier.pos.x) {
+                    soldier.pos += (Game::mapPath[i] - soldier.pos).unit() * (deltaTime * marchVelocity);
+                }
+            }
+        }
     }
 }

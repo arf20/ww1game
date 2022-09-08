@@ -16,6 +16,34 @@
 #define TILE_SIZE   32
 
 // == Types
+struct vector {
+    float x, y;
+
+    float mod() {
+        return std::hypotf(x, y);
+    }
+
+    vector unit() {
+        return { x / mod(), y / mod() };
+    }
+
+    vector operator-(const vector& right) {
+        return { x - right.x, y - right.y };
+    }
+
+    vector operator+(const vector& right) {
+        return { x + right.x, y + right.y };
+    }
+
+    void operator+=(const vector& right) {
+        x += right.x; y += right.y;
+    }
+
+    vector operator*(const float& right) {
+        return { x * right, y*+ right };
+    }
+};
+
 namespace Assets {
     struct Tile {
         std::string name;
@@ -71,8 +99,8 @@ enum SoldierState { IDLE, MARCHING, FIRING, DYING };
 namespace Game {
     struct Soldier {
         bool enemy; // (false = friend)
-        int x, y;
-        int vx, vy;
+        vector pos;
+        vector vel;
         std::vector<Assets::Character>::iterator character;
         SoldierState prevState, state;  // 0 idle, 1 running, 2 firing, 3 dying
         int frameCounter;
@@ -115,7 +143,9 @@ void renderLoop();
 void loadAssets();
 
 // Game
-void soldiersFire(const std::vector<Game::Soldier>::iterator& soldier);
+void soldierFire(const std::vector<Game::Soldier>::iterator& soldier);
+void spawnSoldier(const std::string& faction, const std::string& rank);
+void gameSetup();
 void gameUpdate(float deltaTime);
 
 // Inline util
@@ -140,4 +170,16 @@ inline void exit_error_img(const std::string& msg) {
 
 inline void error_img(const std::string& msg) {
     std::cout << msg << ": " << IMG_GetError() << std::endl;
+}
+
+inline std::vector<Assets::Faction>::iterator getFactionByName(std::string name) {
+    for (auto it = Assets::factions.begin(); it < Assets::factions.end(); it++)
+        if (it->name == name) return it;
+    return Assets::factions.end();
+}
+
+inline std::vector<Assets::Character>::iterator getCharacterByNameAndFaction(std::string name, std::vector<Assets::Faction>::iterator faction) {
+    for (auto it = faction->characters.begin(); it < faction->characters.end(); it++)
+        if (it->name == name) return it;
+    return faction->characters.end();
 }

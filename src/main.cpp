@@ -41,15 +41,9 @@ int main(int argc, const char **argv) {
     selectedTerrainVariant = Assets::terrainVariants.begin();
     selectedMap = Assets::campaigns[0].maps.begin();
 
-    Game::Soldier soldier;
-    soldier.enemy = false;
-    soldier.x = 0;
-    soldier.y = -100;
-    soldier.vx = soldier.vy = 0.0f;
-    soldier.character = Assets::factions[0].characters.begin();
-    soldier.state = SoldierState::MARCHING;
-    soldier.frameCounter = 0;
-    Game::soldiers.push_back(soldier);
+    gameSetup();
+
+    spawnSoldier("german_empire", "officer");
 
     renderSetup();
     renderLoop();
