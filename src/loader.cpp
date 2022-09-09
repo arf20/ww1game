@@ -32,15 +32,15 @@ void loadTerrains() {
         if (!entryVariant.is_directory()) continue;
 
         Assets::TerrainVariant variant;
-        variant.name = entryVariant.path().filename();
+        variant.name = entryVariant.path().filename().string();
 
         for (const auto& entryTile : std::filesystem::directory_iterator(entryVariant.path().string())) {
             if (!entryTile.is_regular_file()) continue;
             if (entryTile.path().extension() != ".png") continue;
 
             Assets::Tile tile { };
-            tile.name = entryTile.path().stem();
-            if ((tile.texture = IMG_LoadTexture(renderer, entryTile.path().c_str())) == NULL) {
+            tile.name = entryTile.path().stem().string();
+            if ((tile.texture = IMG_LoadTexture(renderer, entryTile.path().string().c_str())) == NULL) {
                 error_img("IMG_LoadTexture failed on assets/terrain/" + variant.name + "/" + tile.name + ".png");
                 continue;
             }
@@ -69,7 +69,7 @@ void loadMaps() {
         if (!entryCampaign.is_directory()) continue;
 
         Assets::Campaign campaign;
-        campaign.name = entryCampaign.path().filename();
+        campaign.name = entryCampaign.path().filename().string();
         campaign.nameNice = makeNameNice(campaign.name);
 
         for (const auto& entryMap : std::filesystem::directory_iterator(entryCampaign.path().string())) {
@@ -142,7 +142,7 @@ void loadCharacterAnimation(const std::filesystem::path& path, std::vector<SDL_T
 
     for (const int& frameN : frameNs) {
         SDL_Texture *frame;
-        if ((frame = IMG_LoadTexture(renderer, (path / (std::to_string(frameN) + ".png")).c_str())) == NULL) {
+        if ((frame = IMG_LoadTexture(renderer, (path / (std::to_string(frameN) + ".png")).string().c_str())) == NULL) {
             error_img("IMG_LoadTexture failed on " + (path / (std::to_string(frameN) + ".png")).string());
             anim.push_back(Assets::missingTextureTexture);
         }
@@ -158,14 +158,14 @@ void loadCharacters() {
         if (!entryFaction.is_directory()) continue;
 
         Assets::Faction faction;
-        faction.name = entryFaction.path().filename();
+        faction.name = entryFaction.path().filename().string();
         faction.nameNice = makeNameNice(faction.name);
 
         for (const auto& entryCharacter : std::filesystem::directory_iterator(entryFaction.path().string())) {
             if (!entryCharacter.is_directory()) continue;
 
             Assets::Character character;
-            character.name = entryCharacter.path().stem();
+            character.name = entryCharacter.path().stem().string();
             character.nameNice = makeNameNice(character.name);
             character.fireSnd = Assets::missingSoundSound;
 
@@ -174,7 +174,7 @@ void loadCharacters() {
                 character.idle = Assets::missingTextureTexture;
             }
 
-            if ((character.idle = IMG_LoadTexture(renderer, (entryCharacter.path() / "idle.png").c_str())) == NULL) {
+            if ((character.idle = IMG_LoadTexture(renderer, (entryCharacter.path() / "idle.png").string().c_str())) == NULL) {
                 error_img("IMG_LoadTexture failed on assets/" + faction.name + "/" + character.name + "/idle.png");
                 character.idle = Assets::missingTextureTexture;
             }
@@ -222,9 +222,9 @@ void loadFonts() {
         if (entryFont.path().extension() != ".ttf") continue;
 
         Assets::Font font;
-        font.name = entryFont.path().stem();
+        font.name = entryFont.path().stem().string();
         font.size = 12;
-        if ((font.font = TTF_OpenFont(entryFont.path().c_str(), 12)) == NULL)
+        if ((font.font = TTF_OpenFont(entryFont.path().string().c_str(), 12)) == NULL)
             std::cout << "Error opening font " << entryFont.path().filename() << ": " << TTF_GetError() << std::endl;
 
         Assets::fonts.push_back(font);
@@ -246,12 +246,12 @@ void loadSounds() {
 
     for (const auto& entryFaction : std::filesystem::directory_iterator(ASSET_PATH "/sounds/sfx/factions")) {
         if (!entryFaction.is_directory()) continue;
-        std::string factionName = entryFaction.path().filename();
+        std::string factionName = entryFaction.path().filename().string();
         auto faction = getFactionByName(factionName);
 
         for (const auto& entryCharacter : std::filesystem::directory_iterator(entryFaction.path().string())) {
             if (!entryCharacter.is_directory()) continue;
-            std::string characterName = entryCharacter.path().filename();
+            std::string characterName = entryCharacter.path().filename().string();
 
             if (faction == Assets::factions.end()) {
                 std::cout << "Warning: Faction does not exist while loading sounds: " << factionName << std::endl;
@@ -270,7 +270,7 @@ void loadSounds() {
                 continue;
             }
 
-            if ((character->fireSnd = Mix_LoadWAV((entryCharacter.path() / "fire.ogg").c_str())) == NULL) {
+            if ((character->fireSnd = Mix_LoadWAV((entryCharacter.path() / "fire.ogg").string().c_str())) == NULL) {
                 std::cout << "Error opening " << (entryCharacter.path() / "fire.ogg").string() << ": " << SDL_GetError() << std::endl;
                 character->fireSnd = Assets::missingSoundSound;
             }
@@ -285,7 +285,7 @@ void loadSounds() {
 
     for (const auto& entryFaction : std::filesystem::directory_iterator(ASSET_PATH "/sounds/music/factions")) {
         if (!entryFaction.is_directory()) continue;
-        std::string factionName = entryFaction.path().filename();
+        std::string factionName = entryFaction.path().filename().string();
         auto faction = getFactionByName(factionName);
 
         if (faction == Assets::factions.end()) {
@@ -294,7 +294,7 @@ void loadSounds() {
         }
 
         if (std::filesystem::exists(entryFaction.path() / "victory.ogg")) {
-            if ((faction->victoryMusic.track = Mix_LoadMUS((entryFaction.path() / "victory.ogg").c_str())) == NULL) {
+            if ((faction->victoryMusic.track = Mix_LoadMUS((entryFaction.path() / "victory.ogg").string().c_str())) == NULL) {
                 std::cout << "Error opening " << (entryFaction.path() / "victory.ogg").string() << ": " << SDL_GetError() << std::endl;
             }
         } else {
@@ -309,9 +309,9 @@ void loadSounds() {
             if (entryTrack.path().stem() == "victory") continue;
 
             Assets::MusicTrack track;
-            track.name = entryTrack.path().stem();
+            track.name = entryTrack.path().stem().string();
 
-            if ((track.track = Mix_LoadMUS(entryTrack.path().c_str())) == NULL) {
+            if ((track.track = Mix_LoadMUS(entryTrack.path().string().c_str())) == NULL) {
                 std::cout << "Error opening " << entryTrack.path().string() << ": " << SDL_GetError() << std::endl;
                 continue;
             }
@@ -325,7 +325,7 @@ void loadSounds() {
 
 SDL_Color getPixel(SDL_Surface *surface, int x, int y) {
     int bpp = surface->format->BytesPerPixel;
-    /* Here p is the address to the pixel we want to retrieve */
+    // Here p is the address to the pixel we want to retrieve
     Uint8 *p = (Uint8*)surface->pixels + y * surface->pitch + x * bpp;
     Uint32 data = 0;
 
@@ -346,7 +346,7 @@ SDL_Color getPixel(SDL_Surface *surface, int x, int y) {
             data = *(Uint32*)p;
             break;
         default:
-            data = 0;       /* shouldn't happen, but avoids warnings */
+            data = 0;       // shouldn't happen, but avoids warnings
     }
 
     SDL_Color rgb;
@@ -363,10 +363,10 @@ void loadBackgrounds() {
         if (entryBackground.path().extension() != ".png") continue;
 
         Assets::Background background;
-        background.name = entryBackground.path().stem();
+        background.name = entryBackground.path().stem().string();
 
         SDL_Surface *surf = NULL;
-        if ((surf = IMG_Load(entryBackground.path().c_str())) == NULL) {
+        if ((surf = IMG_Load(entryBackground.path().string().c_str())) == NULL) {
             error_img("IMG_Load failed on assets/backgrounds/" + background.name + ".png");
             continue;
         }

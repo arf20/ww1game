@@ -1,3 +1,7 @@
+#ifdef _WIN32
+	#define SDL_MAIN_HANDLED    // ah yes, windows shenanigans
+#endif
+
 #include "main.hpp"
 
 #include <iostream>
