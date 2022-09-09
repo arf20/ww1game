@@ -17,7 +17,7 @@ void printAssets() {
     for (const Assets::Campaign& c : Assets::campaigns) {
         std::cout << "\t\t" << c.name << ": \"" << c.nameNice << "\" [" << c.maps.size() << "]:" << std::endl;
         for (const Assets::Map& m : c.maps)
-            std::cout << "\t\t\t" << m.id << ": \"" << m.name << "\" " << m.terrainVariantName << " " << m.width << "x" << m.height << std::endl;
+            std::cout << "\t\t\t" << m.id << ": \"" << m.name << "\" " << m.terrainVariantName << " " << m.backgroundName << " " << m.width << "x" << m.height << std::endl;
     }
 
     std::cout << "\tFactions [" << Assets::factions.size() << "]:" << std::endl;
@@ -31,12 +31,15 @@ void printAssets() {
     std::cout << "\tFonts [" << Assets::fonts.size() << "]:" << std::endl;
     for (const Assets::Font& f : Assets::fonts)
         std::cout << "\t\t" << f.name << ": " << f.size << std::endl;
+
+    std::cout << "\tBackgrounds [" << Assets::backgrounds.size() << "]:" << std::endl;
+    for (const Assets::Background& b : Assets::backgrounds)
+        std::cout << "\t\t" << b.name << ": " << b.width << "x" << b.height << std::endl;
 }
 
 int main(int argc, const char **argv) {
     initSDL();
 
-    std::cout << "Loading assets into VRAM..." << std::endl;
     loadAssets();
     printAssets();
 

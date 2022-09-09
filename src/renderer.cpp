@@ -73,6 +73,20 @@ int screenHeight = 720;
 
 int worldOrgX = 0, worldOrgY = 0;
 
+void renderBackground() {
+    for (const Assets::Background& background : Assets::backgrounds) {
+        if (background.name == selectedMap->backgroundName) {
+            SDL_SetRenderDrawColor(renderer, background.skyColor.r, background.skyColor.g, background.skyColor.b, SDL_ALPHA_OPAQUE);
+            SDL_RenderClear(renderer);
+            float factor = float(screenWidth) / float(background.width);
+            renderTexture(background.texture, factor * background.width, factor * background.height, 0, (worldOrgY + Game::mapPath[0].pos.y) - (factor * background.height));
+            return;
+        }
+    }
+
+    renderTexture(missingTextureTexture, screenWidth, screenHeight - (Game::mapPath[0].pos.y), 0, 0);
+}
+
 void renderMap() {
     for (int y = 0; y < selectedMap->height; y++) {
         for (int x = 0; x < selectedMap->width; x++) {
@@ -124,10 +138,12 @@ void renderSetup() {
 void render(float deltaTime) {
     worldOrgY = screenHeight - (TILE_SIZE * selectedMap->height);
 
+    renderBackground();
     renderMap();
     renderSoldiers();
 
-    renderText(std::string("fps: ") + std::to_string(fps) + " deltaTime: " + std::to_string(deltaTime), defaultFont->font, 10, 10, 0, { 255, 255, 255, 255 });
+    if (debug)
+        renderText(std::string("fps: ") + std::to_string(fps) + " deltaTime: " + std::to_string(deltaTime), defaultFont->font, 10, 10, 0, { 255, 255, 255, 255 });
 }
 
 // public functions
@@ -175,9 +191,6 @@ void renderLoop() {
         }
 
         SDL_GetWindowSize(window, &screenWidth, &screenHeight);
-
-        SDL_SetRenderDrawColor(renderer, 0, 240, 240, SDL_ALPHA_OPAQUE);
-        SDL_RenderClear(renderer);
 
         gameUpdate(deltaTime);
         render(deltaTime);

@@ -13,6 +13,7 @@ namespace Assets {
     std::vector<Campaign> campaigns;
     std::vector<Faction> factions;
     std::vector<Font> fonts;
+    std::vector<Background> backgrounds;
 }
 
 std::string makeNameNice(std::string str) {
@@ -95,8 +96,9 @@ void loadMaps() {
 
             map.name = fileMapLines[0];
             map.terrainVariantName = fileMapLines[1];
+            map.backgroundName = fileMapLines[2];
             
-            for (int i = 2; i < fileMapLines.size(); i++)
+            for (int i = 3; i < fileMapLines.size(); i++)
                 map.map.push_back(fileMapLines[i]);
 
             if (map.map[0].length() < 1) {
@@ -280,6 +282,70 @@ void loadSounds() {
     }
 }
 
+SDL_Color getPixel(SDL_Surface *surface, int x, int y) {
+    int bpp = surface->format->BytesPerPixel;
+    /* Here p is the address to the pixel we want to retrieve */
+    Uint8 *p = (Uint8*)surface->pixels + y * surface->pitch + x * bpp;
+    Uint32 data = 0;
+
+    switch (bpp) {
+        case 1:
+            data = *p;
+            break;
+        case 2:
+            data = *(Uint16 *)p;
+            break;
+        case 3:
+            if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
+                data = p[0] << 16 | p[1] << 8 | p[2];
+            else
+                data = p[0] | p[1] << 8 | p[2] << 16;
+                break;
+        case 4:
+            data = *(Uint32*)p;
+            break;
+        default:
+            data = 0;       /* shouldn't happen, but avoids warnings */
+    }
+
+    SDL_Color rgb;
+    SDL_GetRGB(data, surface->format, &rgb.r, &rgb.g, &rgb.b);
+    return rgb;
+}
+
+void loadBackgrounds() {
+    if (!std::filesystem::exists(ASSET_PATH "/backgrounds"))
+        exit_error("Backgrounds directory does not exist");
+
+    for (const auto& entryBackground : std::filesystem::directory_iterator(ASSET_PATH "/backgrounds")) {
+        if (!entryBackground.is_regular_file()) continue;
+        if (entryBackground.path().extension() != ".png") continue;
+
+        Assets::Background background;
+        background.name = entryBackground.path().stem();
+
+        SDL_Surface *surf = NULL;
+        if ((surf = IMG_Load(entryBackground.path().c_str())) == NULL) {
+            error_img("IMG_Load failed on assets/backgrounds/" + background.name + ".png");
+            continue;
+        }
+
+        if ((background.texture = SDL_CreateTextureFromSurface(renderer, surf)) == NULL) {
+            error_img("SDL_CreateTextureFromSurface failed on assets/backgrounds/" + background.name + ".png");
+            continue;
+        }
+
+        if (SDL_QueryTexture(background.texture, NULL, NULL, &background.width, &background.height) < 0) {
+            error_sdl("SDL_QueryTexture failed on assets/backgrounds/" + background.name + ".png");
+            continue;
+        }
+
+        background.skyColor = getPixel(surf, 0, 0);
+
+        Assets::backgrounds.push_back(background);
+    }
+}
+
 void loadAssets() {
     if (!std::filesystem::exists(ASSET_PATH))
         exit_error("Asset directory does not exist");
@@ -293,9 +359,16 @@ void loadAssets() {
     if ((missingSoundSound = Mix_LoadWAV(ASSET_PATH "/missing_sound.ogg")) == NULL)
         exit_error_sdl("Mix_LoadWAV failed on missing_sound");
 
+    std::cout << "Loading terrains into VRAM..." << std::endl;
     loadTerrains();
+    std::cout << "Loading maps..." << std::endl;
     loadMaps();
+    std::cout << "Loading characters..." << std::endl;
     loadCharacters();
+    std::cout << "Loading fonts..." << std::endl;
     loadFonts();
+    std::cout << "Loading sounds..." << std::endl;
     loadSounds();
+    std::cout << "Loading backgrounds..." << std::endl;
+    loadBackgrounds();
 }

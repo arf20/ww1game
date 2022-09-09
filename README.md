@@ -75,6 +75,7 @@ assets/
 ```
 Cambrei                                                         # map title
 summer                                                          # terrain variation
+0                                                               # background name
       cbbbe                                                     # map matrix
      cdaaafe                                    cbbe     
     cdaaaaafe                                  cdaafe    

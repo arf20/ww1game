@@ -60,6 +60,7 @@ namespace Assets {
         int id;
         std::string name;
         std::string terrainVariantName;
+        std::string backgroundName;
         int width, height;
         std::vector<std::string> map;
     };
@@ -92,6 +93,13 @@ namespace Assets {
         int size;
         TTF_Font* font;
     };
+
+    struct Background {
+        std::string name;
+        int width, height;
+        SDL_Color skyColor;
+        SDL_Texture *texture;
+    };
 }
 
 namespace Game {
@@ -120,6 +128,7 @@ namespace Assets {
     extern std::vector<Campaign> campaigns;
     extern std::vector<Faction> factions;
     extern std::vector<Font> fonts;
+    extern std::vector<Background> backgrounds;
 }
 
 // owned by game
