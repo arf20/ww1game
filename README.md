@@ -13,7 +13,7 @@ Dependencies will be SDL2, SDL2_image and probably GL.
 ## Build
 Install dependencies (debian example)
 ```
-sudo apt install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev
+sudo apt install build-essential cmake libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev
 ```
 As any other CMake project
 ```
