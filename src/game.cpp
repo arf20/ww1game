@@ -8,6 +8,8 @@ namespace Game {
 constexpr float gravity = 200.0f;
 constexpr float marchVelocity = 60.0f;
 
+int musicPlayingTrack = 0;
+
 // manipulate soldiers
 void spawnSoldier(const std::string& faction, const std::string& rank) {
     Game::Soldier soldier;
@@ -30,9 +32,9 @@ void soldierFire(const std::vector<Game::Soldier>::iterator& soldier) {
 
 void findMapPath() {
     int prevmy = 0;
-    for (int mx = 0; mx < selectedMap->width; mx++) {
+    for (int mx = 0; mx < Assets::selectedMap->width; mx++) {
         int my = 0;
-        while (selectedMap->map[my][mx] == ' ') { my++; }
+        while (Assets::selectedMap->map[my][mx] == ' ') { my++; }
 
         Game::MapPathPoint point;
         point.type = Game::MapPathPoint::GROUND;
@@ -44,7 +46,7 @@ void findMapPath() {
             point.pos = {float(TILE_SIZE * mx), float(TILE_SIZE * my)}; Game::mapPath.push_back(point);
         }
 
-        if (selectedMap->map[my][mx] == 't') {
+        if (Assets::selectedMap->map[my][mx] == 't') {
             point.type = Game::MapPathPoint::TRENCH;
             point.pos = {float((TILE_SIZE * mx) + (TILE_SIZE / 2)), float(TILE_SIZE * (my + 1))}; Game::mapPath.push_back(point);
         }
@@ -60,6 +62,7 @@ void gameSetup() {
 }
 
 void gameUpdate(float deltaTime) {
+    // update soldiers
     for (Game::Soldier& soldier : Game::soldiers) {
         for (int i = 1; i < Game::mapPath.size(); i++) {
             if (Game::mapPath[i].pos.x > soldier.pos.x + (soldier.character->size.x / 2.0f)) {
@@ -81,5 +84,13 @@ void gameUpdate(float deltaTime) {
                 break;
             }
         }
+    }
+
+    if (Mix_PlayingMusic() == 0) {
+        if (musicPlayingTrack >= Assets::selectedFaction->gameplayMusic.size()) musicPlayingTrack = 0;
+        if (Mix_PlayMusic(Assets::selectedFaction->gameplayMusic[musicPlayingTrack].track, 0) < 0) {
+            error_sdl("Error playing music");
+        }
+        musicPlayingTrack++;
     }
 }

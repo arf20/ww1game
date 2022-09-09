@@ -82,9 +82,17 @@ namespace Assets {
         Mix_Chunk *fireSnd;
     };
 
+    struct MusicTrack {
+        std::string name;
+        Mix_Music *track;
+        float duration;
+    };
+
     struct Faction {
         std::string name;
         std::string nameNice;
+        MusicTrack victoryMusic;
+        std::vector<MusicTrack> gameplayMusic;
         std::vector<Character> characters;
     };
 
@@ -129,6 +137,17 @@ namespace Assets {
     extern std::vector<Faction> factions;
     extern std::vector<Font> fonts;
     extern std::vector<Background> backgrounds;
+
+    extern SDL_Texture *missingTextureTexture;
+    extern Mix_Chunk *missingSoundSound;
+    extern Mix_Music *missingMusicMusic;
+
+    extern std::vector<Assets::Faction>::iterator selectedFaction;
+    extern std::vector<Assets::TerrainVariant>::iterator selectedTerrainVariant;
+    extern std::vector<Assets::Map>::iterator selectedMap;
+    extern std::vector<Assets::Font>::iterator defaultFont;
+
+    extern MusicTrack menuMusic;
 }
 
 // owned by game
@@ -140,13 +159,6 @@ namespace Game {
 // owned by renderer
 extern SDL_Window *window;
 extern SDL_Renderer *renderer;
-
-extern SDL_Texture *missingTextureTexture;
-extern Mix_Chunk* missingSoundSound;
-
-extern std::vector<Assets::TerrainVariant>::iterator selectedTerrainVariant;
-extern std::vector<Assets::Map>::iterator selectedMap;
-extern std::vector<Assets::Font>::iterator defaultFont;
 
 // == Global functions
 // Renderer

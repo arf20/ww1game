@@ -25,7 +25,11 @@ void printAssets() {
         std::cout << "\t\t" << f.name << ": \"" << f.nameNice << "\" [" << f.characters.size() << "]:" << std::endl;
         for (const Assets::Character& c : f.characters)
             std::cout << "\t\t\t" << c.name << ": \"" << c.nameNice << "\" idle walk[" << c.march.size() << "] fire[" << c.fire.size() << "] death[" << c.death.size() << "] " << c.size.x << "x" << c.size.y <<
-                " " << (c.fireSnd == missingSoundSound ? "(missing fire snd)" : "firesnd") << std::endl;
+                " " << (c.fireSnd == Assets::missingSoundSound ? "(missing fire snd)" : "firesnd") << std::endl;
+        std::cout << "\t\tMusic [" << f.gameplayMusic.size() + 1 << "]:" << std::endl;
+        std::cout << "\t\t\tvictory" << std::endl;
+        for (const Assets::MusicTrack& t : f.gameplayMusic)
+            std::cout << "\t\t\t" << t.name << std::endl;
     }
 
     std::cout << "\tFonts [" << Assets::fonts.size() << "]:" << std::endl;
@@ -43,8 +47,9 @@ int main(int argc, const char **argv) {
     loadAssets();
     printAssets();
 
-    selectedTerrainVariant = Assets::terrainVariants.begin();
-    selectedMap = Assets::campaigns[0].maps.begin();
+    Assets::selectedFaction = Assets::factions.begin();
+    Assets::selectedTerrainVariant = Assets::terrainVariants.begin();
+    Assets::selectedMap = Assets::campaigns[0].maps.begin();
 
     gameSetup();
 

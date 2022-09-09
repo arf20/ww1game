@@ -10,9 +10,9 @@
 
 // util functions
 SDL_Texture* getMapTexture(char c) {
-    for (Assets::Tile& tx : selectedTerrainVariant->terrainTextures)
+    for (Assets::Tile& tx : Assets::selectedTerrainVariant->terrainTextures)
         if (tx.name[0] == c) return tx.texture;
-    return missingTextureTexture;
+    return Assets::missingTextureTexture;
 }
 
 void renderTexture(SDL_Texture *t, int w, int h, int x, int y) {
@@ -53,12 +53,16 @@ int renderText(std::string str, TTF_Font* font, int x, int y, unsigned int flags
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
 
-SDL_Texture* missingTextureTexture;
-Mix_Chunk* missingSoundSound;
+namespace Assets {
+    std::vector<Assets::Faction>::iterator selectedFaction;
+    std::vector<Assets::TerrainVariant>::iterator selectedTerrainVariant;
+    std::vector<Assets::Map>::iterator selectedMap;
+    std::vector<Assets::Font>::iterator defaultFont;
 
-std::vector<Assets::TerrainVariant>::iterator selectedTerrainVariant;
-std::vector<Assets::Map>::iterator selectedMap;
-std::vector<Assets::Font>::iterator defaultFont;
+    SDL_Texture *missingTextureTexture;
+    Mix_Chunk *missingSoundSound;
+    Mix_Music *missingMusicMusic;
+}
 
 // local stuff
 #define ANIM_FPS    7
@@ -75,7 +79,7 @@ int worldOrgX = 0, worldOrgY = 0;
 
 void renderBackground() {
     for (const Assets::Background& background : Assets::backgrounds) {
-        if (background.name == selectedMap->backgroundName) {
+        if (background.name == Assets::selectedMap->backgroundName) {
             SDL_SetRenderDrawColor(renderer, background.skyColor.r, background.skyColor.g, background.skyColor.b, SDL_ALPHA_OPAQUE);
             SDL_RenderClear(renderer);
             float factor = float(screenWidth) / float(background.width);
@@ -84,14 +88,14 @@ void renderBackground() {
         }
     }
 
-    renderTexture(missingTextureTexture, screenWidth, screenHeight - (Game::mapPath[0].pos.y), 0, 0);
+    renderTexture(Assets::missingTextureTexture, screenWidth, screenHeight - (Game::mapPath[0].pos.y), 0, 0);
 }
 
 void renderMap() {
-    for (int y = 0; y < selectedMap->height; y++) {
-        for (int x = 0; x < selectedMap->width; x++) {
-            if (selectedMap->map[y][x] == ' ') continue;
-            renderTexture(getMapTexture(selectedMap->map[y][x]), TILE_SIZE, TILE_SIZE, worldOrgX + (TILE_SIZE * x), worldOrgY + (TILE_SIZE * y));
+    for (int y = 0; y < Assets::selectedMap->height; y++) {
+        for (int x = 0; x < Assets::selectedMap->width; x++) {
+            if (Assets::selectedMap->map[y][x] == ' ') continue;
+            renderTexture(getMapTexture(Assets::selectedMap->map[y][x]), TILE_SIZE, TILE_SIZE, worldOrgX + (TILE_SIZE * x), worldOrgY + (TILE_SIZE * y));
         }
     }
 
@@ -136,14 +140,14 @@ void renderSetup() {
 }
 
 void render(float deltaTime) {
-    worldOrgY = screenHeight - (TILE_SIZE * selectedMap->height);
+    worldOrgY = screenHeight - (TILE_SIZE * Assets::selectedMap->height);
 
     renderBackground();
     renderMap();
     renderSoldiers();
 
     if (debug)
-        renderText(std::string("fps: ") + std::to_string(fps) + " deltaTime: " + std::to_string(deltaTime), defaultFont->font, 10, 10, 0, { 255, 255, 255, 255 });
+        renderText(std::string("fps: ") + std::to_string(fps) + " deltaTime: " + std::to_string(deltaTime), Assets::defaultFont->font, 10, 10, 0, { 255, 255, 255, 255 });
 }
 
 // public functions
@@ -195,6 +199,7 @@ void renderLoop() {
         gameUpdate(deltaTime);
         render(deltaTime);
 
+        if (!run) return;
         SDL_RenderPresent(renderer);
 
         frameCounter++;

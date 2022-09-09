@@ -62,14 +62,14 @@ assets/
        - factions/
           - british_empire/   #  music for specific faction
              - victory.ogg    #* to be played on victory
-             - 0.ogg          #  N.ogg N starting at 0 is to be played randomly during gameplay
+             - 0.ogg          #  X.ogg is to be played randomly during gameplay
     - sfx/                    #* sound effects
        - factions/            #* 
           - british_empire/   #  per faction (must exist in assets/factions/)
              - rifleman/      #  per character
                 - fire.ogg    #* weapon fire sound
 ```
-*Fixed
+*Fixed, N = a number starting at 0, X = a string
 
 ## Map file format specification
 ```

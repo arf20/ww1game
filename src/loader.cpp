@@ -144,7 +144,7 @@ void loadCharacterAnimation(const std::filesystem::path& path, std::vector<SDL_T
         SDL_Texture *frame;
         if ((frame = IMG_LoadTexture(renderer, (path / (std::to_string(frameN) + ".png")).c_str())) == NULL) {
             error_img("IMG_LoadTexture failed on " + (path / (std::to_string(frameN) + ".png")).string());
-            anim.push_back(missingTextureTexture);
+            anim.push_back(Assets::missingTextureTexture);
         }
         anim.push_back(frame);
     }
@@ -167,39 +167,39 @@ void loadCharacters() {
             Assets::Character character;
             character.name = entryCharacter.path().stem();
             character.nameNice = makeNameNice(character.name);
-            character.fireSnd = missingSoundSound;
+            character.fireSnd = Assets::missingSoundSound;
 
             if (!std::filesystem::exists(entryCharacter.path() / "idle.png")) {
                 std::cout << "Warning: No idle texture for " << character.name << std::endl;
-                character.idle = missingTextureTexture;
+                character.idle = Assets::missingTextureTexture;
             }
 
             if ((character.idle = IMG_LoadTexture(renderer, (entryCharacter.path() / "idle.png").c_str())) == NULL) {
                 error_img("IMG_LoadTexture failed on assets/" + faction.name + "/" + character.name + "/idle.png");
-                character.idle = missingTextureTexture;
+                character.idle = Assets::missingTextureTexture;
             }
 
             int width, height;
             if (SDL_QueryTexture(character.idle, NULL, NULL, &width, &height) < 0) {
                 error_sdl("SDL_QueryTexture failed on assets/" + faction.name + "/" + character.name + "/idle.png");
-                character.idle = missingTextureTexture;
+                character.idle = Assets::missingTextureTexture;
                 character.size.x = 32.0f; character.size.y = 32.0f;
             }
             character.size.x = width; character.size.y = height;
 
             if (!std::filesystem::exists(entryCharacter.path() / "walk")) {
                 std::cout << "Warning: No walk animation for " << character.name << std::endl;
-                character.march.push_back(missingTextureTexture);
+                character.march.push_back(Assets::missingTextureTexture);
             }
 
             if (!std::filesystem::exists(entryCharacter.path() / "fire")) {
                 std::cout << "Warning: No fire animation for " << character.name << std::endl;
-                character.fire.push_back(missingTextureTexture);
+                character.fire.push_back(Assets::missingTextureTexture);
             }
 
             if (!std::filesystem::exists(entryCharacter.path() / "death")) {
                 std::cout << "Warning: No death animation for " << character.name << std::endl;
-                character.death.push_back(missingTextureTexture);
+                character.death.push_back(Assets::missingTextureTexture);
             }
 
             loadCharacterAnimation(entryCharacter.path() / "walk", character.march);
@@ -231,7 +231,7 @@ void loadFonts() {
     }
 
     for (int i = 0; i < Assets::fonts.size(); i++)
-        if (Assets::fonts[i].name == "default") defaultFont = Assets::fonts.begin() + i;
+        if (Assets::fonts[i].name == "default") Assets::defaultFont = Assets::fonts.begin() + i;
 }
 
 void loadSounds() {
@@ -244,18 +244,15 @@ void loadSounds() {
     if (!std::filesystem::exists(ASSET_PATH "/sounds/sfx/factions"))
         exit_error("Sfx/factions directory does not exist");
 
-    if (!std::filesystem::exists(ASSET_PATH "/sounds/music"))
-        exit_error("Music directory does not exist");
-
     for (const auto& entryFaction : std::filesystem::directory_iterator(ASSET_PATH "/sounds/sfx/factions")) {
         if (!entryFaction.is_directory()) continue;
         std::string factionName = entryFaction.path().filename();
+        auto faction = getFactionByName(factionName);
 
         for (const auto& entryCharacter : std::filesystem::directory_iterator(entryFaction.path().string())) {
             if (!entryCharacter.is_directory()) continue;
             std::string characterName = entryCharacter.path().filename();
 
-            auto faction = getFactionByName(factionName);
             if (faction == Assets::factions.end()) {
                 std::cout << "Warning: Faction does not exist while loading sounds: " << factionName << std::endl;
                 continue;
@@ -269,16 +266,60 @@ void loadSounds() {
 
             if (!std::filesystem::exists(entryCharacter.path() / "fire.ogg")) {
                 std::cout << "Warning: No fire sound for " << character->name << std::endl;
-                character->fireSnd = missingSoundSound;
+                character->fireSnd = Assets::missingSoundSound;
                 continue;
             }
 
             if ((character->fireSnd = Mix_LoadWAV((entryCharacter.path() / "fire.ogg").c_str())) == NULL) {
-                std::cout << "Error opening " << (entryCharacter.path() / "fire.ogg").string() << " " << SDL_GetError() << std::endl;
-                character->fireSnd = missingSoundSound;
+                std::cout << "Error opening " << (entryCharacter.path() / "fire.ogg").string() << ": " << SDL_GetError() << std::endl;
+                character->fireSnd = Assets::missingSoundSound;
             }
         }
+    }
 
+    if (!std::filesystem::exists(ASSET_PATH "/sounds/music"))
+        exit_error("Music directory does not exist");
+
+    if (!std::filesystem::exists(ASSET_PATH "/sounds/music/factions"))
+        exit_error("Music/factions directory does not exist");
+
+    for (const auto& entryFaction : std::filesystem::directory_iterator(ASSET_PATH "/sounds/music/factions")) {
+        if (!entryFaction.is_directory()) continue;
+        std::string factionName = entryFaction.path().filename();
+        auto faction = getFactionByName(factionName);
+
+        if (faction == Assets::factions.end()) {
+            std::cout << "Warning: Faction does not exist while loading music tracks: " << factionName << std::endl;
+            continue;
+        }
+
+        if (std::filesystem::exists(entryFaction.path() / "victory.ogg")) {
+            if ((faction->victoryMusic.track = Mix_LoadMUS((entryFaction.path() / "victory.ogg").c_str())) == NULL) {
+                std::cout << "Error opening " << (entryFaction.path() / "victory.ogg").string() << ": " << SDL_GetError() << std::endl;
+            }
+        } else {
+            std::cout << "Warning: No victory music for " << faction->name << std::endl;
+            faction->victoryMusic.track = Assets::missingMusicMusic;
+            
+        }
+
+        for (const auto& entryTrack : std::filesystem::directory_iterator(entryFaction.path().string())) {
+            if (!entryTrack.is_regular_file()) continue;
+            if (entryTrack.path().extension() != ".ogg") continue;
+            if (entryTrack.path().stem() == "victory") continue;
+
+            Assets::MusicTrack track;
+            track.name = entryTrack.path().stem();
+
+            if ((track.track = Mix_LoadMUS(entryTrack.path().c_str())) == NULL) {
+                std::cout << "Error opening " << entryTrack.path().string() << ": " << SDL_GetError() << std::endl;
+                continue;
+            }
+
+            // track.duration = Mix_MusicDuration() but its SDL_mixer version 2.6.0 but the newest in debian is 2.0.4, well fuck
+
+            faction->gameplayMusic.push_back(track);
+        }
     }
 }
 
@@ -353,11 +394,14 @@ void loadAssets() {
     if (!std::filesystem::exists(ASSET_PATH "/missing_texture.png"))
         exit_error("Missing texture placeholder texture missing");
 
-     if ((missingTextureTexture = IMG_LoadTexture(renderer, ASSET_PATH "/missing_texture.png")) == NULL)
+     if ((Assets::missingTextureTexture = IMG_LoadTexture(renderer, ASSET_PATH "/missing_texture.png")) == NULL)
         exit_error_img("IMG_LoadTexture failed on missing_texture");
 
-    if ((missingSoundSound = Mix_LoadWAV(ASSET_PATH "/missing_sound.ogg")) == NULL)
+    if ((Assets::missingSoundSound = Mix_LoadWAV(ASSET_PATH "/missing_sound.ogg")) == NULL)
         exit_error_sdl("Mix_LoadWAV failed on missing_sound");
+
+    if ((Assets::missingMusicMusic = Mix_LoadMUS(ASSET_PATH "/missing_sound.ogg")) == NULL)
+        exit_error_sdl("Mix_LoadMUS failed on missing_sound");
 
     std::cout << "Loading terrains into VRAM..." << std::endl;
     loadTerrains();
