@@ -4,6 +4,7 @@ namespace Game {
     std::vector<Soldier> friendlies;
     std::vector<Soldier> enemies;
     std::vector<MapPathPoint> mapPath;
+    std::vector<Bullet> bullets;
 }
 
 constexpr float gravity = 200.0f;

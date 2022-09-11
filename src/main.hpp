@@ -113,7 +113,7 @@ namespace Assets {
 namespace Game {
     struct Soldier {
         vector pos;
-        vector vel;
+        vector vel;     // to be used in the future for implementing explosions
         std::vector<Assets::Character>::iterator character;
         enum SoldierState { IDLE, MARCHING, FIRING, DYING } prevState, state;  // 0 idle, 1 running, 2 firing, 3 dying
         int frameCounter;
@@ -122,6 +122,11 @@ namespace Game {
     struct MapPathPoint {
         enum PointType { GROUND, TRENCH } type;
         vector pos;
+    };
+
+    struct Bullet {
+        vector pos;
+        vector vel;
     };
 }
 
@@ -136,6 +141,7 @@ namespace Assets {
     extern std::vector<Faction> factions;
     extern std::vector<Font> fonts;
     extern std::vector<Background> backgrounds;
+    extern SDL_Texture *bulletTexture;
 
     extern SDL_Texture *missingTextureTexture;
     extern Mix_Chunk *missingSoundSound;
@@ -154,6 +160,7 @@ namespace Game {
     extern std::vector<Soldier> friendlies;
     extern std::vector<Soldier> enemies;
     extern std::vector<MapPathPoint> mapPath;
+    extern std::vector<Bullet> bullets;
 }
 
 // owned by renderer

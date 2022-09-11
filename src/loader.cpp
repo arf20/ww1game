@@ -25,10 +25,10 @@ std::string makeNameNice(std::string str) {
 }
 
 void loadTerrains() {
-    if (!std::filesystem::exists(ASSET_PATH "/terrain"))
+    if (!std::filesystem::exists(ASSET_PATH "/textures/terrain"))
         exit_error("Terrain directory does not exist");
 
-    for (const auto& entryVariant : std::filesystem::directory_iterator(ASSET_PATH "/terrain")) {
+    for (const auto& entryVariant : std::filesystem::directory_iterator(ASSET_PATH "/textures/terrain")) {
         if (!entryVariant.is_directory()) continue;
 
         Assets::TerrainVariant variant;
@@ -151,10 +151,10 @@ void loadCharacterAnimation(const std::filesystem::path& path, std::vector<SDL_T
 }
 
 void loadCharacters() {
-    if (!std::filesystem::exists(ASSET_PATH "/factions"))
+    if (!std::filesystem::exists(ASSET_PATH "/textures/factions"))
         exit_error("Terrain directory does not exist");
 
-    for (const auto& entryFaction : std::filesystem::directory_iterator(ASSET_PATH "/factions")) {
+    for (const auto& entryFaction : std::filesystem::directory_iterator(ASSET_PATH "/textures/factions")) {
         if (!entryFaction.is_directory()) continue;
 
         Assets::Faction faction;
@@ -355,10 +355,10 @@ SDL_Color getPixel(SDL_Surface *surface, int x, int y) {
 }
 
 void loadBackgrounds() {
-    if (!std::filesystem::exists(ASSET_PATH "/backgrounds"))
+    if (!std::filesystem::exists(ASSET_PATH "/textures/backgrounds"))
         exit_error("Backgrounds directory does not exist");
 
-    for (const auto& entryBackground : std::filesystem::directory_iterator(ASSET_PATH "/backgrounds")) {
+    for (const auto& entryBackground : std::filesystem::directory_iterator(ASSET_PATH "/textures/backgrounds")) {
         if (!entryBackground.is_regular_file()) continue;
         if (entryBackground.path().extension() != ".png") continue;
 
@@ -367,17 +367,17 @@ void loadBackgrounds() {
 
         SDL_Surface *surf = NULL;
         if ((surf = IMG_Load(entryBackground.path().string().c_str())) == NULL) {
-            error_img("IMG_Load failed on assets/backgrounds/" + background.name + ".png");
+            error_img("IMG_Load failed on assets/textures/backgrounds/" + background.name + ".png");
             continue;
         }
 
         if ((background.texture = SDL_CreateTextureFromSurface(renderer, surf)) == NULL) {
-            error_img("SDL_CreateTextureFromSurface failed on assets/backgrounds/" + background.name + ".png");
+            error_img("SDL_CreateTextureFromSurface failed on assets/textures/backgrounds/" + background.name + ".png");
             continue;
         }
 
         if (SDL_QueryTexture(background.texture, NULL, NULL, &background.width, &background.height) < 0) {
-            error_sdl("SDL_QueryTexture failed on assets/backgrounds/" + background.name + ".png");
+            error_sdl("SDL_QueryTexture failed on assets/textures/backgrounds/" + background.name + ".png");
             continue;
         }
 
