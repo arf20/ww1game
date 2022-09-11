@@ -56,11 +56,8 @@ void findMapPath() {
             point.type = Game::MapPathPoint::TRENCH;
             point.pos = {float((TILE_SIZE * mx) + (TILE_SIZE / 2)), float(TILE_SIZE * (my + 1))}; Game::mapPath.push_back(point);
         }
-
         prevmy = my;
     }
-    
-    
 }
 
 void gameSetup() {

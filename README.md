@@ -91,8 +91,7 @@ On map load, a path through the map is found, in which soldiers travel by their 
 
 ## Todo
 ```
-Soldiers
- - Animation
- - Movement
-Scroll
+Soldier AI
+British faction
+Menu
 ```

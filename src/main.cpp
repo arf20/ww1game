@@ -30,10 +30,10 @@ void printAssets() {
         for (const Assets::Character& c : f.characters)
             std::cout << "\t\t\t" << c.name << ": \"" << c.nameNice << "\" idle walk[" << c.march.size() << "] fire[" << c.fire.size() << "] death[" << c.death.size() << "] " << c.size.x << "x" << c.size.y <<
                 " " << (c.fireSnd == Assets::missingSoundSound ? "(missing fire snd)" : "firesnd") << std::endl;
-        std::cout << "\t\tMusic [" << f.gameplayMusic.size() + 1 << "]:" << std::endl;
-        std::cout << "\t\t\tvictory" << std::endl;
+        std::cout << "\t\t\tMusic [" << f.gameplayMusic.size() + 1 << "]:" << std::endl;
+        std::cout << "\t\t\t\tvictory" << std::endl;
         for (const Assets::MusicTrack& t : f.gameplayMusic)
-            std::cout << "\t\t\t" << t.name << std::endl;
+            std::cout << "\t\t\t\t" << t.name << std::endl;
     }
 
     std::cout << "\tFonts [" << Assets::fonts.size() << "]:" << std::endl;
