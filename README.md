@@ -1,5 +1,6 @@
 # ww1game
 Generic WW1 game (?)
+![image](https://user-images.githubusercontent.com/35542215/189532904-5564c8af-a8f2-49a3-9d2b-37e51142986f.png)
 
 This is my first SDL2 2D "game".
 
