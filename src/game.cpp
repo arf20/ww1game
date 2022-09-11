@@ -11,7 +11,7 @@ constexpr float marchVelocity = 60.0f;
 int musicPlayingTrack = 0;
 
 // manipulate soldiers
-void spawnSoldier(const std::string& faction, const std::string& rank) {
+void soldierSpawn(const std::string& faction, const std::string& rank) {
     Game::Soldier soldier;
     soldier.enemy = false;
     soldier.character = getCharacterByNameAndFaction(rank, getFactionByName(faction));
@@ -23,7 +23,13 @@ void spawnSoldier(const std::string& faction, const std::string& rank) {
     Game::soldiers.push_back(soldier);
 }
 
+void soldierDeath(const std::vector<Game::Soldier>::iterator& soldier) {
+    soldier->state = Game::Soldier::DYING;
+    soldier->frameCounter = 0;
+}
+
 void soldierFire(const std::vector<Game::Soldier>::iterator& soldier) {
+    if (soldier->state == Game::Soldier::DYING) return;
     if (soldier->state != Game::Soldier::FIRING) soldier->prevState = soldier->state;
     soldier->state = Game::Soldier::FIRING;
     soldier->frameCounter = 0;
@@ -64,6 +70,7 @@ void gameSetup() {
 void gameUpdate(float deltaTime) {
     // update soldiers
     for (Game::Soldier& soldier : Game::soldiers) {
+        if (soldier.state == Game::Soldier::DYING) continue;
         for (int i = 1; i < Game::mapPath.size(); i++) {
             if (Game::mapPath[i].pos.x > soldier.pos.x + (soldier.character->size.x / 2.0f)) {
                 if (soldier.state != Game::Soldier::FIRING)

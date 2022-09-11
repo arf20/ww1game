@@ -108,7 +108,7 @@ void renderMap() {
 }
 
 void renderSoldiers() {
-    for (auto it = Game::soldiers.begin(); it != Game::soldiers.end(); it++) {
+    for (auto it = Game::soldiers.begin(); it < Game::soldiers.end(); it++) {
         auto& soldier = *it;
         switch (soldier.state) {
             case Game::Soldier::FIRING: {
@@ -119,7 +119,7 @@ void renderSoldiers() {
                 if ((frameCounter % anim_div) == 0) soldier.frameCounter++;
             } break;
             case Game::Soldier::SoldierState::DYING: {
-                if (soldier.frameCounter >= soldier.character->death.size()) { Game::soldiers.erase(it); continue; }
+                if (soldier.frameCounter >= soldier.character->death.size()) { Game::soldiers.erase(it); continue; break; }
                 renderTexture(soldier.character->death[soldier.frameCounter], soldier.character->size.x, soldier.character->size.y, worldOrgX + soldier.pos.x, worldOrgY + soldier.pos.y);
                 if ((frameCounter % anim_div) == 0) soldier.frameCounter++;
             } break;
@@ -181,10 +181,13 @@ void renderLoop() {
                                 }
                         } break;
                         case SDLK_1: {
-                            spawnSoldier("german_empire", "officer");
+                            soldierSpawn("german_empire", "officer");
                         } break;
                         case SDLK_z: {
                             soldierFire(Game::soldiers.begin());
+                        } break;
+                        case SDLK_x: {
+                            soldierDeath(Game::soldiers.begin());
                         } break;
                     }
                 } break;

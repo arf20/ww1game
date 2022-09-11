@@ -171,8 +171,9 @@ void renderLoop();
 void loadAssets();
 
 // Game
+void soldierSpawn(const std::string& faction, const std::string& rank);
+void soldierDeath(const std::vector<Game::Soldier>::iterator& soldier);
 void soldierFire(const std::vector<Game::Soldier>::iterator& soldier);
-void spawnSoldier(const std::string& faction, const std::string& rank);
 void gameSetup();
 void gameUpdate(float deltaTime);
 
