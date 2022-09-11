@@ -1,7 +1,8 @@
 #include "main.hpp"
 
 namespace Game {
-    std::vector<Soldier> soldiers;
+    std::vector<Soldier> friendlies;
+    std::vector<Soldier> enemies;
     std::vector<MapPathPoint> mapPath;
 }
 
@@ -11,16 +12,26 @@ constexpr float marchVelocity = 60.0f;
 int musicPlayingTrack = 0;
 
 // manipulate soldiers
-void soldierSpawn(const std::string& faction, const std::string& rank) {
+void soldierSpawn(const std::string& faction, const std::string& rank, bool enemy) {
     Game::Soldier soldier;
-    soldier.enemy = false;
     soldier.character = getCharacterByNameAndFaction(rank, getFactionByName(faction));
-    soldier.pos.y = Game::mapPath[0].pos.y - soldier.character->size.y;
-    soldier.pos.x = 10;
+    if (enemy) {
+        // enemy spawn point
+        soldier.pos.y = Game::mapPath[Game::mapPath.size() - 1].pos.y - soldier.character->size.y;
+        soldier.pos.x = Game::mapPath[Game::mapPath.size() - 1].pos.x - 10;
+    } else {
+        // friendly spawn point
+        soldier.pos.y = Game::mapPath[0].pos.y - soldier.character->size.y;
+        soldier.pos.x = 10;
+    }
     soldier.vel = { 0.0f, 0.0f };
     soldier.state = Game::Soldier::MARCHING;
     soldier.frameCounter = 0;
-    Game::soldiers.push_back(soldier);
+
+    if (enemy)
+        Game::enemies.push_back(soldier);
+    else
+        Game::friendlies.push_back(soldier);
 }
 
 void soldierDeath(const std::vector<Game::Soldier>::iterator& soldier) {
@@ -65,13 +76,38 @@ void gameSetup() {
 }
 
 void gameUpdate(float deltaTime) {
-    // update soldiers
-    for (Game::Soldier& soldier : Game::soldiers) {
+    // update friendlies
+    for (Game::Soldier& soldier : Game::friendlies) {
         if (soldier.state == Game::Soldier::DYING) continue;
         for (int i = 1; i < Game::mapPath.size(); i++) {
             if (Game::mapPath[i].pos.x > soldier.pos.x + (soldier.character->size.x / 2.0f)) {
                 if (soldier.state != Game::Soldier::FIRING)
                     if (Game::mapPath[i - 1].type == Game::MapPathPoint::GROUND) {
+                        soldier.prevState = soldier.state;
+                        soldier.state = Game::Soldier::MARCHING;
+                    } else {
+                        soldier.prevState = soldier.state;
+                        soldier.state = Game::Soldier::IDLE;
+                    }
+
+                if (soldier.state == Game::Soldier::SoldierState::MARCHING) {
+                    vector center = soldier.pos;
+                    center.x += soldier.character->size.x / 2.0f; center.y += soldier.character->size.y;
+                    soldier.pos += (Game::mapPath[i].pos - center).unit() * (deltaTime * marchVelocity);
+                }
+
+                break;
+            }
+        }
+    }
+
+    // update enemies
+    for (Game::Soldier& soldier : Game::enemies) {
+        if (soldier.state == Game::Soldier::DYING) continue;
+        for (int i = Game::mapPath.size() - 2; i >= 0; i--) {
+            if (Game::mapPath[i].pos.x < soldier.pos.x + (soldier.character->size.x / 2.0f)) {
+                if (soldier.state != Game::Soldier::FIRING)
+                    if (Game::mapPath[i + 1].type == Game::MapPathPoint::GROUND) {
                         soldier.prevState = soldier.state;
                         soldier.state = Game::Soldier::MARCHING;
                     } else {

@@ -15,10 +15,11 @@ SDL_Texture* getMapTexture(char c) {
     return Assets::missingTextureTexture;
 }
 
-void renderTexture(SDL_Texture *t, int w, int h, int x, int y) {
+void renderTexture(SDL_Texture *t, int w, int h, int x, int y, bool mirror) {
     SDL_Rect rect;
     rect.h = h; rect.w = w; rect.x = x; rect.y = y;
-    SDL_RenderCopy(renderer, t, NULL, &rect);
+    SDL_RendererFlip flip = mirror ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
+    SDL_RenderCopyEx(renderer, t, NULL, &rect, 0.0, NULL, flip);
 }
 
 #define TEXT_CENTERX    (unsigned int)1
@@ -83,19 +84,19 @@ void renderBackground() {
             SDL_SetRenderDrawColor(renderer, background.skyColor.r, background.skyColor.g, background.skyColor.b, SDL_ALPHA_OPAQUE);
             SDL_RenderClear(renderer);
             float factor = float(screenWidth) / float(background.width);
-            renderTexture(background.texture, factor * background.width, factor * background.height, 0, (worldOrgY + Game::mapPath[0].pos.y) - (factor * background.height));
+            renderTexture(background.texture, factor * background.width, factor * background.height, 0, (worldOrgY + Game::mapPath[0].pos.y) - (factor * background.height), false);
             return;
         }
     }
 
-    renderTexture(Assets::missingTextureTexture, screenWidth, screenHeight - (Game::mapPath[0].pos.y), 0, 0);
+    renderTexture(Assets::missingTextureTexture, screenWidth, screenHeight - (Game::mapPath[0].pos.y), 0, 0, false);
 }
 
 void renderMap() {
     for (int y = 0; y < Assets::selectedMap->height; y++) {
         for (int x = 0; x < Assets::selectedMap->width; x++) {
             if (Assets::selectedMap->map[y][x] == ' ') continue;
-            renderTexture(getMapTexture(Assets::selectedMap->map[y][x]), TILE_SIZE, TILE_SIZE, worldOrgX + (TILE_SIZE * x), worldOrgY + (TILE_SIZE * y));
+            renderTexture(getMapTexture(Assets::selectedMap->map[y][x]), TILE_SIZE, TILE_SIZE, worldOrgX + (TILE_SIZE * x), worldOrgY + (TILE_SIZE * y), false);
         }
     }
 
@@ -107,28 +108,28 @@ void renderMap() {
         }
 }
 
-void renderSoldiers() {
-    for (auto it = Game::soldiers.begin(); it < Game::soldiers.end(); it++) {
+void renderSoldiers(std::vector<Game::Soldier>& soldiers, bool enemy) {
+    for (auto it = soldiers.begin(); it < soldiers.end(); it++) {
         auto& soldier = *it;
         switch (soldier.state) {
             case Game::Soldier::FIRING: {
                 if (soldier.frameCounter >= soldier.character->fire.size()) { soldier.state = soldier.prevState; soldier.frameCounter = 0;
-                    renderTexture(soldier.character->idle, soldier.character->size.x, soldier.character->size.y, worldOrgX + soldier.pos.x, worldOrgY + soldier.pos.y);
+                    renderTexture(soldier.character->idle, soldier.character->size.x, soldier.character->size.y, worldOrgX + soldier.pos.x, worldOrgY + soldier.pos.y, enemy);
                     continue; }
-                renderTexture(soldier.character->fire[soldier.frameCounter], soldier.character->size.x, soldier.character->size.y, worldOrgX + soldier.pos.x, worldOrgY + soldier.pos.y);
+                renderTexture(soldier.character->fire[soldier.frameCounter], soldier.character->size.x, soldier.character->size.y, worldOrgX + soldier.pos.x, worldOrgY + soldier.pos.y, enemy);
                 if ((frameCounter % anim_div) == 0) soldier.frameCounter++;
             } break;
             case Game::Soldier::SoldierState::DYING: {
-                if (soldier.frameCounter >= soldier.character->death.size()) { Game::soldiers.erase(it); continue; break; }
-                renderTexture(soldier.character->death[soldier.frameCounter], soldier.character->size.x, soldier.character->size.y, worldOrgX + soldier.pos.x, worldOrgY + soldier.pos.y);
+                if (soldier.frameCounter >= soldier.character->death.size()) { soldiers.erase(it); continue; break; }
+                renderTexture(soldier.character->death[soldier.frameCounter], soldier.character->size.x, soldier.character->size.y, worldOrgX + soldier.pos.x, worldOrgY + soldier.pos.y, enemy);
                 if ((frameCounter % anim_div) == 0) soldier.frameCounter++;
             } break;
             case Game::Soldier::SoldierState::IDLE: {
-                renderTexture(soldier.character->idle, soldier.character->size.x, soldier.character->size.y, worldOrgX + soldier.pos.x, worldOrgY + soldier.pos.y);
+                renderTexture(soldier.character->idle, soldier.character->size.x, soldier.character->size.y, worldOrgX + soldier.pos.x, worldOrgY + soldier.pos.y, enemy);
             } break;
             case Game::Soldier::SoldierState::MARCHING: {
                 if (soldier.frameCounter >= soldier.character->march.size()) soldier.frameCounter = 0;
-                renderTexture(soldier.character->march[soldier.frameCounter], soldier.character->size.x, soldier.character->size.y, worldOrgX + soldier.pos.x, worldOrgY + soldier.pos.y);
+                renderTexture(soldier.character->march[soldier.frameCounter], soldier.character->size.x, soldier.character->size.y, worldOrgX + soldier.pos.x, worldOrgY + soldier.pos.y, enemy);
                 if ((frameCounter % anim_div) == 0) soldier.frameCounter++;
             } break;
         }
@@ -144,7 +145,8 @@ void render(float deltaTime) {
 
     renderBackground();
     renderMap();
-    renderSoldiers();
+    renderSoldiers(Game::friendlies, false);
+    renderSoldiers(Game::enemies, true);
 
     if (debug)
         renderText(std::string("fps: ") + std::to_string(fps) + " deltaTime: " + std::to_string(deltaTime), Assets::defaultFont->font, 10, 10, 0, { 255, 255, 255, 255 });
@@ -181,13 +183,16 @@ void renderLoop() {
                                 }
                         } break;
                         case SDLK_1: {
-                            soldierSpawn("german_empire", "officer");
+                            soldierSpawn("german_empire", "officer", false);
+                        } break;
+                        case SDLK_2: {
+                            soldierSpawn("german_empire", "officer", true);
                         } break;
                         case SDLK_z: {
-                            soldierFire(Game::soldiers.begin());
+                            soldierFire(Game::friendlies.begin());
                         } break;
                         case SDLK_x: {
-                            soldierDeath(Game::soldiers.begin());
+                            soldierDeath(Game::friendlies.begin());
                         } break;
                     }
                 } break;

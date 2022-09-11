@@ -112,7 +112,6 @@ namespace Assets {
 
 namespace Game {
     struct Soldier {
-        bool enemy; // (false = friend)
         vector pos;
         vector vel;
         std::vector<Assets::Character>::iterator character;
@@ -152,7 +151,8 @@ namespace Assets {
 
 // owned by game
 namespace Game {
-    extern std::vector<Soldier> soldiers;
+    extern std::vector<Soldier> friendlies;
+    extern std::vector<Soldier> enemies;
     extern std::vector<MapPathPoint> mapPath;
 }
 
@@ -171,7 +171,7 @@ void renderLoop();
 void loadAssets();
 
 // Game
-void soldierSpawn(const std::string& faction, const std::string& rank);
+void soldierSpawn(const std::string& faction, const std::string& rank, bool enemy);
 void soldierDeath(const std::vector<Game::Soldier>::iterator& soldier);
 void soldierFire(const std::vector<Game::Soldier>::iterator& soldier);
 void gameSetup();
