@@ -132,10 +132,12 @@ namespace Game {
     struct Soldier {
         vector pos;
         vector vel;     // to be used in the future for implementing explosions
+        float rand;     // a gaussian random number associated with the soldier
         std::vector<Assets::Character>::iterator character;
         enum SoldierState { IDLE, MARCHING, FIRING, DYING } prevState, state;  // 0 idle, 1 running, 2 firing, 3 dying
         int frameCounter;
         float cooldownTime;
+        int health;
     };
 
     struct MapPathPoint {
@@ -146,6 +148,8 @@ namespace Game {
     struct Bullet {
         vector pos;
         vector vel;
+        enum BulletType { PISTOL, RIFLE, MACHINEGUN } type;
+        bool fromEnemy;
     };
 }
 
