@@ -14,6 +14,7 @@ namespace Assets {
     std::vector<Faction> factions;
     std::vector<Font> fonts;
     std::vector<Background> backgrounds;
+    SDL_Texture *bulletTexture;
 }
 
 std::string makeNameNice(std::string str) {
@@ -25,6 +26,9 @@ std::string makeNameNice(std::string str) {
 }
 
 void loadTerrains() {
+    if (!std::filesystem::exists(ASSET_PATH "/textures"))
+        exit_error("Textures directory does not exist");
+
     if (!std::filesystem::exists(ASSET_PATH "/textures/terrain"))
         exit_error("Terrain directory does not exist");
 
@@ -397,6 +401,9 @@ void loadAssets() {
      if ((Assets::missingTextureTexture = IMG_LoadTexture(renderer, ASSET_PATH "/missing_texture.png")) == NULL)
         exit_error_img("IMG_LoadTexture failed on missing_texture");
 
+    if (!std::filesystem::exists(ASSET_PATH "/missing_sound.ogg"))
+        exit_error("Missing sound placeholder texture missing");
+
     if ((Assets::missingSoundSound = Mix_LoadWAV(ASSET_PATH "/missing_sound.ogg")) == NULL)
         exit_error_sdl("Mix_LoadWAV failed on missing_sound");
 
@@ -415,4 +422,13 @@ void loadAssets() {
     loadSounds();
     std::cout << "Loading backgrounds..." << std::endl;
     loadBackgrounds();
+
+    if (!std::filesystem::exists(ASSET_PATH "/textures/bullet.png"))
+        exit_error("Bullet texture missing");
+
+    if ((Assets::bulletTexture = IMG_LoadTexture(renderer, ASSET_PATH "/textures/bullet.png")) == NULL) {
+        error_img("IMG_LoadTexture failed on assets/textures/bullet.png");
+        Assets::bulletTexture = Assets::missingTextureTexture;
+    }
+
 }

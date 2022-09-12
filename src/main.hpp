@@ -40,9 +40,27 @@ struct vector {
     }
 
     vector operator*(const float& right) {
-        return { x * right, y*+ right };
+        return { x * right, y * right };
+    }
+
+    vector operator/(const float& right) {
+        return { x / right, y / right };
+    }
+
+    vector toPolar() {
+        vector v;
+        v.x = atan2(y, x);
+        v.y = mod();
+        return v;
     }
 };
+
+inline vector vectorFromPolar(const vector& v) {
+    vector t;
+    t.x = cos(v.x) * v.y;
+    t.y = sin(v.x) * v.y;
+    return t;
+}
 
 namespace Assets {
     struct Tile {
@@ -117,6 +135,7 @@ namespace Game {
         std::vector<Assets::Character>::iterator character;
         enum SoldierState { IDLE, MARCHING, FIRING, DYING } prevState, state;  // 0 idle, 1 running, 2 firing, 3 dying
         int frameCounter;
+        float cooldownTime;
     };
 
     struct MapPathPoint {

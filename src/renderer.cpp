@@ -108,9 +108,13 @@ void renderMap() {
         }
 }
 
+void renderBullets() {
+    for (const Game::Bullet& bullet : Game::bullets)
+        renderTexture(Assets::bulletTexture, 16, 16, worldOrgX + bullet.pos.x, worldOrgY + bullet.pos.y, false);
+}
+
 void renderSoldiers(std::vector<Game::Soldier>& soldiers, bool enemy) {
-    for (auto it = soldiers.begin(); it < soldiers.end(); it++) {
-        auto& soldier = *it;
+    for (Game::Soldier& soldier : soldiers) {
         switch (soldier.state) {
             case Game::Soldier::FIRING: {
                 if (soldier.frameCounter >= soldier.character->fire.size()) { soldier.state = soldier.prevState; soldier.frameCounter = 0;
@@ -120,7 +124,7 @@ void renderSoldiers(std::vector<Game::Soldier>& soldiers, bool enemy) {
                 if ((frameCounter % anim_div) == 0) soldier.frameCounter++;
             } break;
             case Game::Soldier::SoldierState::DYING: {
-                if (soldier.frameCounter >= soldier.character->death.size()) { soldiers.erase(it); continue; break; }
+                if (soldier.frameCounter >= soldier.character->death.size()) break;
                 renderTexture(soldier.character->death[soldier.frameCounter], soldier.character->size.x, soldier.character->size.y, worldOrgX + soldier.pos.x, worldOrgY + soldier.pos.y, enemy);
                 if ((frameCounter % anim_div) == 0) soldier.frameCounter++;
             } break;
@@ -145,6 +149,7 @@ void render(float deltaTime) {
 
     renderBackground();
     renderMap();
+    renderBullets();
     renderSoldiers(Game::friendlies, false);
     renderSoldiers(Game::enemies, true);
 
