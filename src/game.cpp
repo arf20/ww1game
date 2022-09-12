@@ -198,6 +198,15 @@ void gameUpdate(float deltaTime) {
 
         bool mapcheck = true;
         if (nearestEnemy != Game::enemies.end()) {
+            vector muzzlePoint = {soldier.pos.x + (2.0f * soldier.character->size.x / 3.0f), soldier.pos.y + (soldier.character->size.x / 3.0f)};
+            vector enemyCenter = (nearestEnemy->character->size / 2.0f) + nearestEnemy->pos;
+
+            for (int i = 0; i < Game::mapPath.size() - 2; i++) {
+                if (doIntersect(muzzlePoint, enemyCenter, Game::mapPath[i].pos, Game::mapPath[i + 1].pos)) {
+                    goto mapcalc;
+                }
+            }
+
             mapcheck = false;
             if (soldier.state != Game::Soldier::FIRING) {
                 soldier.prevState = soldier.state;
@@ -205,8 +214,6 @@ void gameUpdate(float deltaTime) {
             }
             if (soldier.cooldownTime <= 0.0f) {
                 soldierFire(it);
-                vector muzzlePoint = {soldier.pos.x + (2.0f * soldier.character->size.x / 3.0f), soldier.pos.y + (soldier.character->size.x / 3.0f)};
-                vector enemyCenter = (nearestEnemy->character->size / 2.0f) + nearestEnemy->pos;
                 vector vel = (enemyCenter - muzzlePoint).unit() * muzzleVelocity;
                 vector polarVel = vel.toPolar();
                 polarVel.x += bulletGauss(randgen);
@@ -217,6 +224,7 @@ void gameUpdate(float deltaTime) {
         }
         soldier.cooldownTime -= deltaTime;
 
+        mapcalc:
         for (int i = 1; i < Game::mapPath.size(); i++) {
             if (Game::mapPath[i].pos.x > soldier.pos.x + (soldier.character->size.x / 2.0f)) {
                 if (mapcheck)
@@ -260,6 +268,15 @@ void gameUpdate(float deltaTime) {
 
         bool mapcheck = true;
         if (nearestFriendly != Game::friendlies.end()) {
+            vector muzzlePoint = {soldier.pos.x + (2.0f * soldier.character->size.x / 3.0f), soldier.pos.y + (soldier.character->size.x / 3.0f)};
+            vector friendlyCenter = (nearestFriendly->character->size / 2.0f) + nearestFriendly->pos;
+
+            for (int i = 0; i < Game::mapPath.size() - 2; i++) {
+                if (doIntersect(muzzlePoint, friendlyCenter, Game::mapPath[i].pos, Game::mapPath[i + 1].pos)) {
+                    goto mapcalc2;
+                }
+            }
+
             mapcheck = false;
             if (soldier.state != Game::Soldier::FIRING && soldier.state != Game::Soldier::FIRING) {
                 soldier.prevState = soldier.state;
@@ -279,6 +296,7 @@ void gameUpdate(float deltaTime) {
         }
         soldier.cooldownTime -= deltaTime;
 
+        mapcalc2:
         for (int i = Game::mapPath.size() - 2; i >= 0; i--) {
             if (Game::mapPath[i].pos.x < soldier.pos.x + (soldier.character->size.x / 2.0f)) {
                 if (mapcheck)

@@ -193,12 +193,6 @@ void renderLoop() {
                         case SDLK_2: {
                             soldierSpawn("german_empire", "officer", true);
                         } break;
-                        case SDLK_z: {
-                            soldierFire(Game::friendlies.begin());
-                        } break;
-                        case SDLK_x: {
-                            soldierDeath(Game::friendlies.begin());
-                        } break;
                     }
                 } break;
                 case SDL_QUIT: {
