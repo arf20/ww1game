@@ -29,7 +29,7 @@ make install
 assets/
  - missing_texture.png           #* something to render in case a texture is missing so you know its missing, 32x32
  - missing_sound.ogg             #* something to play in case a sound is missing so you know its missing, 440Hz 1s
- - textures/
+ - textures/                     #* textures
     - bullet.png                 #* bullet texture
     - terrain/                   #* terrain variants
        - summer/                 #  variant (naming convention is lowercase and '_' separated)
@@ -96,7 +96,8 @@ On map load, a path through the map is found, in which soldiers travel by their 
 
 ## Todo
 ```
-Soldier AI
 British faction
 Menu
+Character propieties files
+Game config file
 ```

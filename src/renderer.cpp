@@ -110,7 +110,7 @@ void renderMap() {
 
 void renderBullets() {
     for (const Game::Bullet& bullet : Game::bullets)
-        renderTexture(Assets::bulletTexture, 16, 16, worldOrgX + bullet.pos.x, worldOrgY + bullet.pos.y, false);
+        renderTexture(Assets::bulletTexture, 64, 64, worldOrgX + bullet.pos.x, worldOrgY + bullet.pos.y, false);
 }
 
 void renderSoldiers(std::vector<Game::Soldier>& soldiers, bool enemy) {

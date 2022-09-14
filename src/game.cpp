@@ -80,6 +80,7 @@ void bulletSpawn(vector pos, vector vel, Game::Bullet::BulletType type, bool fro
     Game::bullets.push_back(bullet);
 }
 
+// build a vector of points from map
 void findMapPath() {
     int prevmy = 0;
     for (int mx = 0; mx < Assets::selectedMap->width; mx++) {
@@ -104,6 +105,7 @@ void findMapPath() {
     }
 }
 
+// line-line intersection alg
 bool onSegment(vector p, vector q, vector r) {
     if (q.x <= std::max(p.x, r.x) && q.x >= std::min(p.x, r.x) &&
         q.y <= std::max(p.y, r.y) && q.y >= std::min(p.y, r.y))
@@ -135,22 +137,22 @@ bool doIntersect(vector p1, vector q1, vector p2, vector q2) {
     return false;
 }
 
+// ============== game itself ==============
 void gameSetup() {
     findMapPath();
 }
 
-void gameUpdate(float deltaTime) {
-    // update bullets
+void updateBullets(float deltaTime) {
     for (auto it = Game::bullets.begin(); it < Game::bullets.end(); it++) {
         Game::Bullet& bullet = *it;
-        vector b1 = bullet.pos;
+        vector b1 = bullet.pos;     // get travel segment
         bullet.pos += bullet.vel * deltaTime;
         vector b2 = bullet.pos;
 
         // if out of the map
         if (bullet.pos.x < 0.0f || bullet.pos.x > Game::mapPath[Game::mapPath.size() - 1].pos.x) { Game::bullets.erase(it); continue; }
 
-        // map collision
+        // map collision, intersect travel segment with all map segments
         bool cont = false;
         for (int i = 0; i < Game::mapPath.size() - 2; i++) {
             if (doIntersect(b1, b2, Game::mapPath[i].pos, Game::mapPath[i + 1].pos)) {
@@ -174,35 +176,38 @@ void gameUpdate(float deltaTime) {
                 }
         }
     }
+}
 
-    // update friendlies
-    for (auto it = Game::friendlies.begin(); it < Game::friendlies.end(); it++) {
+// targetEnemies relatively to 'soldiers'
+void updateFaction(std::vector<Game::Soldier>& soldiers, const std::vector<Game::Soldier>& targetEnemies, bool dir, float deltaTime) {
+    for (auto it = soldiers.begin(); it < soldiers.end(); it++) {
         Game::Soldier& soldier = *it;
 
+        // soldier die when health runs out
         if (soldier.health <= 0) soldierDeath(it);
 
         if (soldier.state == Game::Soldier::DYING) {
-            if (soldier.frameCounter >= soldier.character->death.size()) Game::friendlies.erase(it);
+            if (soldier.frameCounter >= soldier.character->death.size()) soldiers.erase(it);
             continue;
         }
 
         // find nearest enemy
-        std::vector<Game::Soldier>::iterator nearestEnemy = Game::enemies.end();
-        for (auto it = Game::enemies.begin(); it < Game::enemies.end(); it++) {
+        auto nearestEnemy = targetEnemies.end();
+        for (auto it = targetEnemies.begin(); it < targetEnemies.end(); it++) {
             const Game::Soldier& enemy = *it;
             if (abs(enemy.pos.x - soldier.pos.x) < soldier.rand * pistolDistance) {
-                if (nearestEnemy == Game::enemies.end()) { nearestEnemy = it; continue; }
+                if (nearestEnemy == targetEnemies.end()) { nearestEnemy = it; continue; }
                 if (abs(enemy.pos.x - soldier.pos.x) < abs(nearestEnemy->pos.x - soldier.pos.x)) { nearestEnemy = it; continue; }
             }
         }
 
         bool mapcheck = true;
-        if (nearestEnemy != Game::enemies.end()) {
+        if (nearestEnemy != targetEnemies.end()) {
             vector muzzlePoint = {soldier.pos.x + (2.0f * soldier.character->size.x / 3.0f), soldier.pos.y + (soldier.character->size.x / 3.0f)};
-            vector enemyCenter = (nearestEnemy->character->size / 2.0f) + nearestEnemy->pos;
+            vector targetPoint = (nearestEnemy->character->size / 2.0f) + nearestEnemy->pos;
 
             for (int i = 0; i < Game::mapPath.size() - 2; i++) {
-                if (doIntersect(muzzlePoint, enemyCenter, Game::mapPath[i].pos, Game::mapPath[i + 1].pos)) {
+                if (doIntersect(muzzlePoint, targetPoint, Game::mapPath[i].pos, Game::mapPath[i + 1].pos)) {
                     goto mapcalc;
                 }
             }
@@ -214,111 +219,68 @@ void gameUpdate(float deltaTime) {
             }
             if (soldier.cooldownTime <= 0.0f) {
                 soldierFire(it);
-                vector vel = (enemyCenter - muzzlePoint).unit() * muzzleVelocity;
+                vector vel = (targetPoint - muzzlePoint).unit() * muzzleVelocity;
                 vector polarVel = vel.toPolar();
                 polarVel.x += bulletGauss(randgen);
                 vel = vectorFromPolar(polarVel);
-                bulletSpawn(muzzlePoint, vel, Game::Bullet::PISTOL, false);
+                bulletSpawn(muzzlePoint, vel, Game::Bullet::PISTOL, dir);
                 soldier.cooldownTime = pistolRpm / 60.0f;
             }
         }
         soldier.cooldownTime -= deltaTime;
 
         mapcalc:
-        for (int i = 1; i < Game::mapPath.size(); i++) {
-            if (Game::mapPath[i].pos.x > soldier.pos.x + (soldier.character->size.x / 2.0f)) {
-                if (mapcheck)
-                    if (Game::mapPath[i - 1].type == Game::MapPathPoint::GROUND) {
-                        soldier.prevState = soldier.state;
-                        soldier.state = Game::Soldier::MARCHING;
-                    } else {
-                        soldier.prevState = soldier.state;
-                        soldier.state = Game::Soldier::IDLE;
+        if (!dir) {   // advance direction: false = right, true = left
+            for (int i = 1; i < Game::mapPath.size(); i++) {
+                if (Game::mapPath[i].pos.x > soldier.pos.x + (soldier.character->size.x / 2.0f)) {
+                    if (mapcheck)
+                        if (Game::mapPath[i - 1].type == Game::MapPathPoint::GROUND) {
+                            soldier.prevState = soldier.state;
+                            soldier.state = Game::Soldier::MARCHING;
+                        } else {
+                            soldier.prevState = soldier.state;
+                            soldier.state = Game::Soldier::IDLE;
+                        }
+                    if (soldier.state == Game::Soldier::SoldierState::MARCHING) {
+                        vector center = soldier.pos;
+                        center.x += soldier.character->size.x / 2.0f; center.y += soldier.character->size.y;
+                        soldier.pos += (Game::mapPath[i].pos - center).unit() * (deltaTime * soldier.rand * marchSpeed);
                     }
-                if (soldier.state == Game::Soldier::SoldierState::MARCHING) {
-                    vector center = soldier.pos;
-                    center.x += soldier.character->size.x / 2.0f; center.y += soldier.character->size.y;
-                    soldier.pos += (Game::mapPath[i].pos - center).unit() * (deltaTime * soldier.rand * marchSpeed);
+                    break;
                 }
-                break;
+            }
+        }
+        else {
+            for (int i = Game::mapPath.size() - 2; i >= 0; i--) {
+                if (Game::mapPath[i].pos.x < soldier.pos.x + (soldier.character->size.x / 2.0f)) {
+                    if (mapcheck)
+                        if (Game::mapPath[i + 1].type == Game::MapPathPoint::GROUND) {
+                            soldier.prevState = soldier.state;
+                            soldier.state = Game::Soldier::MARCHING;
+                        } else {
+                            soldier.prevState = soldier.state;
+                            soldier.state = Game::Soldier::IDLE;
+                        }
+                    if (soldier.state == Game::Soldier::SoldierState::MARCHING) {
+                        vector center = soldier.pos;
+                        center.x += soldier.character->size.x / 2.0f; center.y += soldier.character->size.y;
+                        soldier.pos += (Game::mapPath[i].pos - center).unit() * (deltaTime * soldier.rand * marchSpeed);
+                    }
+
+                    break;
+                }
             }
         }
     }
+}
 
-    // update enemies
-    for (auto it = Game::enemies.begin(); it < Game::enemies.end(); it++) {
-        Game::Soldier& soldier = *it;
+void gameUpdate(float deltaTime) {
+    updateBullets(deltaTime);
 
-        if (soldier.health <= 0) soldierDeath(it);
-
-        if (soldier.state == Game::Soldier::DYING) {
-            if (soldier.frameCounter >= soldier.character->death.size()) Game::enemies.erase(it);
-            continue;
-        }
-
-        // find nearest friendly
-        std::vector<Game::Soldier>::iterator nearestFriendly = Game::friendlies.end();
-        for (auto it = Game::friendlies.begin(); it < Game::friendlies.end(); it++) {
-            const Game::Soldier& enemy = *it;
-            if (abs(enemy.pos.x - soldier.pos.x) < soldier.rand * pistolDistance) {
-                if (nearestFriendly == Game::friendlies.end()) { nearestFriendly = it; continue; }
-                if (abs(enemy.pos.x - soldier.pos.x) < abs(nearestFriendly->pos.x - soldier.pos.x)) { nearestFriendly = it; continue; }
-            }
-        }
-
-        bool mapcheck = true;
-        if (nearestFriendly != Game::friendlies.end()) {
-            vector muzzlePoint = {soldier.pos.x + (2.0f * soldier.character->size.x / 3.0f), soldier.pos.y + (soldier.character->size.x / 3.0f)};
-            vector friendlyCenter = (nearestFriendly->character->size / 2.0f) + nearestFriendly->pos;
-
-            for (int i = 0; i < Game::mapPath.size() - 2; i++) {
-                if (doIntersect(muzzlePoint, friendlyCenter, Game::mapPath[i].pos, Game::mapPath[i + 1].pos)) {
-                    goto mapcalc2;
-                }
-            }
-
-            mapcheck = false;
-            if (soldier.state != Game::Soldier::FIRING && soldier.state != Game::Soldier::FIRING) {
-                soldier.prevState = soldier.state;
-                soldier.state = Game::Soldier::IDLE;
-            }
-            if (soldier.cooldownTime <= 0.0f) {
-                soldierFire(it);
-                vector muzzlePoint = {soldier.pos.x + (2.0f * soldier.character->size.x / 3.0f), soldier.pos.y + (soldier.character->size.x / 3.0f)};
-                vector friendlyCenter = (nearestFriendly->character->size / 2.0f) + nearestFriendly->pos;
-                vector vel = (friendlyCenter - muzzlePoint).unit() * muzzleVelocity;
-                vector polarVel = vel.toPolar();
-                polarVel.x += bulletGauss(randgen);
-                vel = vectorFromPolar(polarVel);
-                bulletSpawn(muzzlePoint, vel, Game::Bullet::PISTOL, true);
-                soldier.cooldownTime = pistolRpm / 60.0f;
-            }
-        }
-        soldier.cooldownTime -= deltaTime;
-
-        mapcalc2:
-        for (int i = Game::mapPath.size() - 2; i >= 0; i--) {
-            if (Game::mapPath[i].pos.x < soldier.pos.x + (soldier.character->size.x / 2.0f)) {
-                if (mapcheck)
-                    if (Game::mapPath[i + 1].type == Game::MapPathPoint::GROUND) {
-                        soldier.prevState = soldier.state;
-                        soldier.state = Game::Soldier::MARCHING;
-                    } else {
-                        soldier.prevState = soldier.state;
-                        soldier.state = Game::Soldier::IDLE;
-                    }
-
-                if (soldier.state == Game::Soldier::SoldierState::MARCHING) {
-                    vector center = soldier.pos;
-                    center.x += soldier.character->size.x / 2.0f; center.y += soldier.character->size.y;
-                    soldier.pos += (Game::mapPath[i].pos - center).unit() * (deltaTime * soldier.rand * marchSpeed);
-                }
-
-                break;
-            }
-        }
-    }
-
+    updateFaction(Game::friendlies, Game::enemies, false, deltaTime);
+    updateFaction(Game::enemies, Game::friendlies, true, deltaTime);
+    
+    
     if (Mix_PlayingMusic() == 0) {
         if (musicPlayingTrack >= Assets::selectedFaction->gameplayMusic.size()) musicPlayingTrack = 0;
         if (Mix_PlayMusic(Assets::selectedFaction->gameplayMusic[musicPlayingTrack].track, 0) < 0) {
