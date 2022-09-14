@@ -137,6 +137,15 @@ bool doIntersect(vector p1, vector q1, vector p2, vector q2) {
     return false;
 }
 
+bool intersectsMap(const vector& a, const vector& b) {
+    for (int i = 0; i < Game::mapPath.size() - 2; i++) {
+        if (doIntersect(a, b, Game::mapPath[i].pos, Game::mapPath[i + 1].pos)) {
+            return true;
+        }
+    }
+    return false;
+}
+
 // ============== game itself ==============
 void gameSetup() {
     findMapPath();
@@ -153,29 +162,39 @@ void updateBullets(float deltaTime) {
         if (bullet.pos.x < 0.0f || bullet.pos.x > Game::mapPath[Game::mapPath.size() - 1].pos.x) { Game::bullets.erase(it); continue; }
 
         // map collision, intersect travel segment with all map segments
-        bool cont = false;
-        for (int i = 0; i < Game::mapPath.size() - 2; i++) {
-            if (doIntersect(b1, b2, Game::mapPath[i].pos, Game::mapPath[i + 1].pos)) {
-                Game::bullets.erase(it); cont = true; break;
-            }
+        if (intersectsMap(b1, b2)) {
+            Game::bullets.erase(it);
+            continue;
         }
-        if (cont) continue;
+
 
         // soldier collision, no friendly fire
         if (bullet.fromEnemy) {
             for (Game::Soldier& soldier : Game::friendlies)
                 if ((bullet.pos.x > soldier.pos.x) && (bullet.pos.y > soldier.pos.y) && (bullet.pos.x < soldier.pos.x + soldier.character->size.x) && (bullet.pos.y < soldier.pos.y + soldier.character->size.y)) {
                     soldier.health -= pistolDamage;
-                    Game::bullets.erase(it); cont = true; break;
+                    Game::bullets.erase(it); break;
                 }
         } else {
             for (Game::Soldier& soldier : Game::enemies)
                 if ((bullet.pos.x > soldier.pos.x) && (bullet.pos.y > soldier.pos.y) && (bullet.pos.x < soldier.pos.x + soldier.character->size.x) && (bullet.pos.y < soldier.pos.y + soldier.character->size.y)) {
                     soldier.health -= pistolDamage;
-                    Game::bullets.erase(it); cont = true; break;
+                    Game::bullets.erase(it); break;
                 }
         }
     }
+}
+
+auto findNearestTarget(const Game::Soldier& soldier, const std::vector<Game::Soldier>& targetEnemies) {
+    auto nearestEnemy = targetEnemies.end();
+    for (auto it = targetEnemies.begin(); it < targetEnemies.end(); it++) {
+        const Game::Soldier& enemy = *it;
+        if (abs(enemy.pos.x - soldier.pos.x) < soldier.rand * pistolDistance) {
+            if (nearestEnemy == targetEnemies.end()) { nearestEnemy = it; continue; }
+            if (abs(enemy.pos.x - soldier.pos.x) < abs(nearestEnemy->pos.x - soldier.pos.x)) { nearestEnemy = it; continue; }
+        }
+    }
+    return nearestEnemy;
 }
 
 // targetEnemies relatively to 'soldiers'
@@ -191,26 +210,14 @@ void updateFaction(std::vector<Game::Soldier>& soldiers, const std::vector<Game:
             continue;
         }
 
-        // find nearest enemy
-        auto nearestEnemy = targetEnemies.end();
-        for (auto it = targetEnemies.begin(); it < targetEnemies.end(); it++) {
-            const Game::Soldier& enemy = *it;
-            if (abs(enemy.pos.x - soldier.pos.x) < soldier.rand * pistolDistance) {
-                if (nearestEnemy == targetEnemies.end()) { nearestEnemy = it; continue; }
-                if (abs(enemy.pos.x - soldier.pos.x) < abs(nearestEnemy->pos.x - soldier.pos.x)) { nearestEnemy = it; continue; }
-            }
-        }
+        auto nearestTarget = findNearestTarget(soldier, targetEnemies);
 
         bool mapcheck = true;
-        if (nearestEnemy != targetEnemies.end()) {
+        if (nearestTarget != targetEnemies.end()) {
             vector muzzlePoint = {soldier.pos.x + (2.0f * soldier.character->size.x / 3.0f), soldier.pos.y + (soldier.character->size.x / 3.0f)};
-            vector targetPoint = (nearestEnemy->character->size / 2.0f) + nearestEnemy->pos;
+            vector targetPoint = (nearestTarget->character->size / 2.0f) + nearestTarget->pos;
 
-            for (int i = 0; i < Game::mapPath.size() - 2; i++) {
-                if (doIntersect(muzzlePoint, targetPoint, Game::mapPath[i].pos, Game::mapPath[i + 1].pos)) {
-                    goto mapcalc;
-                }
-            }
+            if (intersectsMap(muzzlePoint, targetPoint)) goto mapcalc;
 
             mapcheck = false;
             if (soldier.state != Game::Soldier::FIRING) {
