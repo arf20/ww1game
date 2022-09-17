@@ -170,9 +170,6 @@ namespace Assets {
     extern Mix_Chunk *missingSoundSound;
     extern Mix_Music *missingMusicMusic;
 
-    extern std::vector<Assets::Faction>::iterator selectedFaction;
-    extern std::vector<Assets::TerrainVariant>::iterator selectedTerrainVariant;
-    extern std::vector<Assets::Map>::iterator selectedMap;
     extern std::vector<Assets::Font>::iterator defaultFont;
 
     extern MusicTrack menuMusic;
@@ -180,6 +177,10 @@ namespace Assets {
 
 // owned by game
 namespace Game {
+    extern std::vector<Assets::Faction>::iterator friendlyFaction, enemyFaction;
+    extern std::vector<Assets::TerrainVariant>::iterator selectedTerrainVariant;
+    extern std::vector<Assets::Map>::iterator selectedMap;
+
     extern std::vector<Soldier> friendlies;
     extern std::vector<Soldier> enemies;
     extern std::vector<MapPathPoint> mapPath;
@@ -201,7 +202,7 @@ void renderLoop();
 void loadAssets();
 
 // Game
-void soldierSpawn(const std::string& faction, const std::string& rank, bool enemy);
+void soldierSpawn(const std::vector<Assets::Character>::iterator& character, bool enemy);
 void soldierDeath(const std::vector<Game::Soldier>::iterator& soldier);
 void soldierFire(const std::vector<Game::Soldier>::iterator& soldier);
 void gameSetup();

@@ -3,6 +3,11 @@
 #include <random>
 
 namespace Game {
+    std::vector<Assets::TerrainVariant>::iterator selectedTerrainVariant;
+    std::vector<Assets::Map>::iterator selectedMap;
+
+    std::vector<Assets::Faction>::iterator friendlyFaction, enemyFaction;
+
     std::vector<Soldier> friendlies;
     std::vector<Soldier> enemies;
     std::vector<MapPathPoint> mapPath;
@@ -31,9 +36,9 @@ std::normal_distribution<double> soldierGauss(1.0, 0.1);    // variation in sold
 std::normal_distribution<double> bulletGauss(0.0, 0.1);     // aim inaccuracy
 
 // manipulate soldiers
-void soldierSpawn(const std::string& faction, const std::string& rank, bool enemy) {
+void soldierSpawn(const std::vector<Assets::Character>::iterator& character, bool enemy) {
     Game::Soldier soldier;
-    soldier.character = getCharacterByNameAndFaction(rank, getFactionByName(faction));
+    soldier.character = character;
     if (enemy) {
         // enemy spawn point
         soldier.pos.y = Game::mapPath[Game::mapPath.size() - 1].pos.y - soldier.character->size.y;
@@ -83,9 +88,9 @@ void bulletSpawn(vector pos, vector vel, Game::Bullet::BulletType type, bool fro
 // build a vector of points from map
 void findMapPath() {
     int prevmy = 0;
-    for (int mx = 0; mx < Assets::selectedMap->width; mx++) {
+    for (int mx = 0; mx < Game::selectedMap->width; mx++) {
         int my = 0;
-        while (Assets::selectedMap->map[my][mx] == ' ') { my++; }
+        while (Game::selectedMap->map[my][mx] == ' ') { my++; }
 
         Game::MapPathPoint point;
         point.type = Game::MapPathPoint::GROUND;
@@ -97,7 +102,7 @@ void findMapPath() {
             point.pos = {float(TILE_SIZE * mx), float(TILE_SIZE * my)}; Game::mapPath.push_back(point);
         }
 
-        if (Assets::selectedMap->map[my][mx] == 't') {
+        if (Game::selectedMap->map[my][mx] == 't') {
             point.type = Game::MapPathPoint::TRENCH;
             point.pos = {float((TILE_SIZE * mx) + (TILE_SIZE / 2)), float(TILE_SIZE * (my + 1))}; Game::mapPath.push_back(point);
         }
@@ -289,8 +294,8 @@ void gameUpdate(float deltaTime) {
     
     
     if (Mix_PlayingMusic() == 0) {
-        if (musicPlayingTrack >= Assets::selectedFaction->gameplayMusic.size()) musicPlayingTrack = 0;
-        if (Mix_PlayMusic(Assets::selectedFaction->gameplayMusic[musicPlayingTrack].track, 0) < 0) {
+        if (musicPlayingTrack >= Game::friendlyFaction->gameplayMusic.size()) musicPlayingTrack = 0;
+        if (Mix_PlayMusic(Game::friendlyFaction->gameplayMusic[musicPlayingTrack].track, 0) < 0) {
             error_sdl("Error playing music");
         }
         musicPlayingTrack++;

@@ -10,7 +10,7 @@
 
 // util functions
 SDL_Texture* getMapTexture(char c) {
-    for (Assets::Tile& tx : Assets::selectedTerrainVariant->terrainTextures)
+    for (Assets::Tile& tx : Game::selectedTerrainVariant->terrainTextures)
         if (tx.name[0] == c) return tx.texture;
     return Assets::missingTextureTexture;
 }
@@ -55,9 +55,6 @@ SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
 
 namespace Assets {
-    std::vector<Assets::Faction>::iterator selectedFaction;
-    std::vector<Assets::TerrainVariant>::iterator selectedTerrainVariant;
-    std::vector<Assets::Map>::iterator selectedMap;
     std::vector<Assets::Font>::iterator defaultFont;
 
     SDL_Texture *missingTextureTexture;
@@ -80,7 +77,7 @@ int worldOrgX = 0, worldOrgY = 0;
 
 void renderBackground() {
     for (const Assets::Background& background : Assets::backgrounds) {
-        if (background.name == Assets::selectedMap->backgroundName) {
+        if (background.name == Game::selectedMap->backgroundName) {
             SDL_SetRenderDrawColor(renderer, background.skyColor.r, background.skyColor.g, background.skyColor.b, SDL_ALPHA_OPAQUE);
             SDL_RenderClear(renderer);
             float factor = float(screenWidth) / float(background.width);
@@ -93,10 +90,10 @@ void renderBackground() {
 }
 
 void renderMap() {
-    for (int y = 0; y < Assets::selectedMap->height; y++) {
-        for (int x = 0; x < Assets::selectedMap->width; x++) {
-            if (Assets::selectedMap->map[y][x] == ' ') continue;
-            renderTexture(getMapTexture(Assets::selectedMap->map[y][x]), TILE_SIZE, TILE_SIZE, worldOrgX + (TILE_SIZE * x), worldOrgY + (TILE_SIZE * y), false);
+    for (int y = 0; y < Game::selectedMap->height; y++) {
+        for (int x = 0; x < Game::selectedMap->width; x++) {
+            if (Game::selectedMap->map[y][x] == ' ') continue;
+            renderTexture(getMapTexture(Game::selectedMap->map[y][x]), TILE_SIZE, TILE_SIZE, worldOrgX + (TILE_SIZE * x), worldOrgY + (TILE_SIZE * y), false);
         }
     }
 
@@ -110,7 +107,7 @@ void renderMap() {
 
 void renderBullets() {
     for (const Game::Bullet& bullet : Game::bullets)
-        renderTexture(Assets::bulletTexture, 64, 64, worldOrgX + bullet.pos.x, worldOrgY + bullet.pos.y, false);
+        renderTexture(Assets::bulletTexture, 32, 32, worldOrgX + bullet.pos.x, worldOrgY + bullet.pos.y, false);
 }
 
 void renderSoldiers(std::vector<Game::Soldier>& soldiers, bool enemy) {
@@ -145,7 +142,7 @@ void renderSetup() {
 }
 
 void render(float deltaTime) {
-    worldOrgY = screenHeight - (TILE_SIZE * Assets::selectedMap->height);
+    worldOrgY = screenHeight - (TILE_SIZE * Game::selectedMap->height);
 
     renderBackground();
     renderMap();
@@ -188,10 +185,10 @@ void renderLoop() {
                                 }
                         } break;
                         case SDLK_1: {
-                            soldierSpawn("german_empire", "officer", false);
+                            soldierSpawn(Game::friendlyFaction->characters.begin(), false);
                         } break;
                         case SDLK_2: {
-                            soldierSpawn("german_empire", "officer", true);
+                            soldierSpawn(Game::enemyFaction->characters.begin(), true);
                         } break;
                     }
                 } break;
