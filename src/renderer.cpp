@@ -69,6 +69,7 @@ float fps = 0.0f;
 std::chrono::_V2::system_clock::time_point time_prev = std::chrono::high_resolution_clock::now();
 long frameCounter = 0;
 int anim_div = 0;
+//bool animFrame = false;
 
 int screenWidth = 1280;
 int screenHeight = 720;
@@ -118,12 +119,12 @@ void renderSoldiers(std::vector<Game::Soldier>& soldiers, bool enemy) {
                     renderTexture(soldier.character->idle, soldier.character->size.x, soldier.character->size.y, worldOrgX + soldier.pos.x, worldOrgY + soldier.pos.y, enemy);
                     continue; }
                 renderTexture(soldier.character->fire[soldier.frameCounter], soldier.character->size.x, soldier.character->size.y, worldOrgX + soldier.pos.x, worldOrgY + soldier.pos.y, enemy);
-                if ((frameCounter % anim_div) == 0) soldier.frameCounter++;
+                if (frameCounter == 0) { soldier.frameCounter++; }
             } break;
             case Game::Soldier::SoldierState::DYING: {
                 if (soldier.frameCounter >= soldier.character->death.size()) break;
                 renderTexture(soldier.character->death[soldier.frameCounter], soldier.character->size.x, soldier.character->size.y, worldOrgX + soldier.pos.x, worldOrgY + soldier.pos.y, enemy);
-                if ((frameCounter % anim_div) == 0) soldier.frameCounter++;
+                if (frameCounter == 0) { soldier.frameCounter++; }
             } break;
             case Game::Soldier::SoldierState::IDLE: {
                 renderTexture(soldier.character->idle, soldier.character->size.x, soldier.character->size.y, worldOrgX + soldier.pos.x, worldOrgY + soldier.pos.y, enemy);
@@ -131,7 +132,7 @@ void renderSoldiers(std::vector<Game::Soldier>& soldiers, bool enemy) {
             case Game::Soldier::SoldierState::MARCHING: {
                 if (soldier.frameCounter >= soldier.character->march.size()) soldier.frameCounter = 0;
                 renderTexture(soldier.character->march[soldier.frameCounter], soldier.character->size.x, soldier.character->size.y, worldOrgX + soldier.pos.x, worldOrgY + soldier.pos.y, enemy);
-                if ((frameCounter % anim_div) == 0) soldier.frameCounter++;
+                if (frameCounter == 0) { soldier.frameCounter++; }
             } break;
         }
     }
@@ -166,6 +167,7 @@ void renderLoop() {
         anim_div = std::roundl(fps / (float)ANIM_FPS);
         if (anim_div == 0.0f) anim_div = 1.0;
         time_prev = time_now;
+        if (frameCounter > anim_div) { frameCounter = 0; }
 
         while (SDL_PollEvent(&event)) {
             switch (event.type) {

@@ -96,7 +96,7 @@ On map load, a path through the map is found, in which soldiers travel by their 
 
 ## Todo
 ```
-British faction
+British faction and maps
 Menu
 Character propieties files
 Game config file
