@@ -24,6 +24,13 @@ make
 make install
 ```
 
+## Run
+Currently you can only
+```
+./src/ww1game
+```
+will be changed later
+
 ## Asset directory structure (example)
 ```
 assets/
