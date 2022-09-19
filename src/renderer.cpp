@@ -190,7 +190,13 @@ void renderLoop() {
                             soldierSpawn(Game::friendlyFaction->characters.begin(), false);
                         } break;
                         case SDLK_2: {
+                            soldierSpawn(Game::friendlyFaction->characters.begin() + 1, false);
+                        } break;
+                        case SDLK_3: {
                             soldierSpawn(Game::enemyFaction->characters.begin(), true);
+                        } break;
+                        case SDLK_4: {
+                            soldierSpawn(Game::enemyFaction->characters.begin() + 1, true);
                         } break;
                     }
                 } break;

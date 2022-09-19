@@ -69,7 +69,8 @@ void soldierDeath(const std::vector<Game::Soldier>::iterator& soldier) {
 
 void soldierFire(const std::vector<Game::Soldier>::iterator& soldier) {
     if (soldier->state == Game::Soldier::DYING) return;
-    if (soldier->state != Game::Soldier::FIRING) soldier->prevState = soldier->state;
+    if (soldier->state == Game::Soldier::FIRING) return;
+    soldier->prevState = soldier->state;
     soldier->state = Game::Soldier::FIRING;
     soldier->frameCounter = 0;
     Mix_PlayChannel(-1, soldier->character->fireSnd, 0);
