@@ -114,6 +114,14 @@ On map load, a path through the map is found, in which soldiers travel by their 
 100      # health
 ```
 
+## Global configuration
+Will brobably be at /usr/local/ww1game/ or something, and the assets at /usr/local/ww1game/assets or idk
+```
+assets/  # asset directory path
+200      # gravity (reserved for future use)
+7        # animation framerate
+```
+
 
 ## Todo
 ```
