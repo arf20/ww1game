@@ -40,6 +40,7 @@ assets/
     - factions/                  #* factions
        - german_empire/          #  faction (naming convention is lowercase and '_' separated)
           - rifleman/            #  character (lowercase)
+             - properties.cfg    #* character properties, described below
              - idle.png          #* idle texture
              - walk/             #* walking animation, contains N.png N starting at 0
                 - 0.png          #  animation frame texture
@@ -54,7 +55,7 @@ assets/
                 - 0.png
                 - 1.png
     - backgrounds/               #* backgrounds folder
-       - cambrei.png             # background
+       - cambrei.png             #  background
  - campaigns/                    #* campaigns
     - western_front/             #  campaign (naming convention is lowercase and '_' separated, displays "Western Front") contains filenames N.map N starting at 0
        - 0.map                   #  map (according to the format specification below, includes a title like "Cambrei")
@@ -93,6 +94,19 @@ The first line is the map title, and the second is the terrain variation.
 Then the map is described by a matrix of characters which correspond with the first letter of the terrain texture filename.
 
 On map load, a path through the map is found, in which soldiers travel by their bottom center point.
+
+## Character properties specification
+```
+6        # fire frame, at what frame the weapon is fired in the animation
+10       # rounds per minute
+66       # round damage
+300      # muzzle velocity (pix/s)
+0.1      # bullet spread (angular standard deviation)
+60       # march speed (pix/s)
+20       # range (in tiles)
+100      # health
+```
+
 
 ## Todo
 ```
