@@ -98,6 +98,15 @@ namespace Assets {
         std::vector<SDL_Texture*> fire;
         std::vector<SDL_Texture*> death;
         Mix_Chunk *fireSnd;
+        int fireFrame;
+
+        float marchSpeed;
+        float range;
+        float rpm;
+        float muzzleVel;
+        float spread;
+        int roundDamage;
+        int iHealth;
     };
 
     struct MusicTrack {

@@ -154,6 +154,44 @@ void loadCharacterAnimation(const std::filesystem::path& path, std::vector<SDL_T
     }
 }
 
+void loadCharacterConfiguration(const std::filesystem::path& path, Assets::Character& character) {
+    auto confPath = path / "properties.cfg";
+    if (!std::filesystem::exists(confPath)) {
+        std::cout << "Properties for character does not exist: " + confPath.string() << std::endl;
+        return;
+    }
+
+    std::ifstream fileCfg(confPath.string());
+    if (!fileCfg.is_open()) {
+        std::cout << "Error opening properties for character: " + confPath.string() << std::endl;
+        return;
+    }
+
+    std::vector<std::string> fileCfgLines;
+    std::string line;
+    while (std::getline(fileCfg, line))
+        fileCfgLines.push_back(line);
+
+    if (fileCfgLines.size() == 0) {
+        std::cout << "Error opening properties for character: " + confPath.string() << std::endl;
+        return;
+    }
+
+    try {
+        character.fireFrame = std::stoi(fileCfgLines[0]);
+        character.rpm = std::stof(fileCfgLines[1]);
+        character.roundDamage = std::stoi(fileCfgLines[2]);
+        character.muzzleVel = std::stof(fileCfgLines[3]);
+        character.spread = std::stof(fileCfgLines[4]);
+        character.marchSpeed = std::stof(fileCfgLines[5]);
+        character.range = std::stof(fileCfgLines[6]);
+        character.iHealth = std::stoi(fileCfgLines[7]);
+    } catch (std::exception e) {
+        std::cout << e.what() << " parsing config file " << confPath.string() << std::endl;
+        return;
+    }
+}
+
 void loadCharacters() {
     if (!std::filesystem::exists(ASSET_PATH "/textures/factions"))
         exit_error("Terrain directory does not exist");
@@ -209,6 +247,8 @@ void loadCharacters() {
             loadCharacterAnimation(entryCharacter.path() / "walk", character.march);
             loadCharacterAnimation(entryCharacter.path() / "fire", character.fire);
             loadCharacterAnimation(entryCharacter.path() / "death", character.death);
+
+            loadCharacterConfiguration(entryCharacter.path(), character);
 
             faction.characters.push_back(character);
         }
