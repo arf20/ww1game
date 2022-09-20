@@ -33,7 +33,7 @@ constexpr float machinegunDistance = 15 * TILE_SIZE;
 int musicPlayingTrack = 0;
 std::default_random_engine randgen;
 std::normal_distribution<double> soldierGauss(1.0, 0.1);    // variation in soldier capabilities
-std::normal_distribution<double> bulletGauss(0.0, 0.1);     // aim inaccuracy
+std::normal_distribution<double> bulletGauss(0.0, 1.0);     // aim inaccuracy
 
 // manipulate soldiers
 void soldierSpawn(const std::vector<Assets::Character>::iterator& character, bool enemy) {
@@ -53,7 +53,7 @@ void soldierSpawn(const std::vector<Assets::Character>::iterator& character, boo
     soldier.frameCounter = 0;
     soldier.cooldownTime = 0.0f;
     soldier.rand = soldierGauss(randgen);
-    soldier.health = 100;
+    soldier.health = soldier.character->iHealth;
 
     if (enemy)
         Game::enemies.push_back(soldier);
@@ -73,15 +73,14 @@ void soldierFire(const std::vector<Game::Soldier>::iterator& soldier) {
     soldier->prevState = soldier->state;
     soldier->state = Game::Soldier::FIRING;
     soldier->frameCounter = 0;
-    Mix_PlayChannel(-1, soldier->character->fireSnd, 0);
 }
 
 // manipulate bullets
-void bulletSpawn(vector pos, vector vel, Game::Bullet::BulletType type, bool fromEnemy) {
+void bulletSpawn(vector pos, vector vel, int damage, bool fromEnemy) {
     Game::Bullet bullet;
     bullet.pos = pos;
     bullet.vel = vel;
-    bullet.type = type;
+    bullet.damage = damage;
     bullet.fromEnemy = fromEnemy;
     Game::bullets.push_back(bullet);
 }
@@ -173,18 +172,17 @@ void updateBullets(float deltaTime) {
             continue;
         }
 
-
         // soldier collision, no friendly fire
         if (bullet.fromEnemy) {
             for (Game::Soldier& soldier : Game::friendlies)
                 if ((bullet.pos.x > soldier.pos.x) && (bullet.pos.y > soldier.pos.y) && (bullet.pos.x < soldier.pos.x + soldier.character->size.x) && (bullet.pos.y < soldier.pos.y + soldier.character->size.y)) {
-                    soldier.health -= pistolDamage;
+                    soldier.health -= bullet.damage;
                     Game::bullets.erase(it); break;
                 }
         } else {
             for (Game::Soldier& soldier : Game::enemies)
                 if ((bullet.pos.x > soldier.pos.x) && (bullet.pos.y > soldier.pos.y) && (bullet.pos.x < soldier.pos.x + soldier.character->size.x) && (bullet.pos.y < soldier.pos.y + soldier.character->size.y)) {
-                    soldier.health -= pistolDamage;
+                    soldier.health -= bullet.damage;
                     Game::bullets.erase(it); break;
                 }
         }
@@ -195,7 +193,7 @@ auto findNearestTarget(const Game::Soldier& soldier, const std::vector<Game::Sol
     auto nearestEnemy = targetEnemies.end();
     for (auto it = targetEnemies.begin(); it < targetEnemies.end(); it++) {
         const Game::Soldier& enemy = *it;
-        if (abs(enemy.pos.x - soldier.pos.x) < soldier.rand * pistolDistance) {
+        if (abs(enemy.pos.x - soldier.pos.x) < soldier.rand * soldier.character->range * TILE_SIZE) {
             if (nearestEnemy == targetEnemies.end()) { nearestEnemy = it; continue; }
             if (abs(enemy.pos.x - soldier.pos.x) < abs(nearestEnemy->pos.x - soldier.pos.x)) { nearestEnemy = it; continue; }
         }
@@ -232,12 +230,15 @@ void updateFaction(std::vector<Game::Soldier>& soldiers, const std::vector<Game:
             }
             if (soldier.cooldownTime <= 0.0f) {
                 soldierFire(it);
-                vector vel = (targetPoint - muzzlePoint).unit() * muzzleVelocity;
-                vector polarVel = vel.toPolar();
-                polarVel.x += bulletGauss(randgen);
-                vel = vectorFromPolar(polarVel);
-                bulletSpawn(muzzlePoint, vel, Game::Bullet::PISTOL, dir);
-                soldier.cooldownTime = pistolRpm / 60.0f;
+                if (soldier.frameCounter == soldier.character->fireFrame) {
+                    vector vel = (targetPoint - muzzlePoint).unit() * soldier.character->muzzleVel;
+                    vector polarVel = vel.toPolar();
+                    polarVel.x += soldier.character->spread * bulletGauss(randgen);
+                    vel = vectorFromPolar(polarVel);
+                    bulletSpawn(muzzlePoint, vel, soldier.character->roundDamage, dir);
+                    soldier.cooldownTime = soldier.character->rpm / 60.0f;
+                    Mix_PlayChannel(-1, soldier.character->fireSnd, 0);
+                }
             }
         }
         soldier.cooldownTime -= deltaTime;
@@ -257,7 +258,7 @@ void updateFaction(std::vector<Game::Soldier>& soldiers, const std::vector<Game:
                     if (soldier.state == Game::Soldier::SoldierState::MARCHING) {
                         vector center = soldier.pos;
                         center.x += soldier.character->size.x / 2.0f; center.y += soldier.character->size.y;
-                        soldier.pos += (Game::mapPath[i].pos - center).unit() * (deltaTime * soldier.rand * marchSpeed);
+                        soldier.pos += (Game::mapPath[i].pos - center).unit() * (deltaTime * soldier.rand * soldier.character->marchSpeed);
                     }
                     break;
                 }
@@ -277,7 +278,7 @@ void updateFaction(std::vector<Game::Soldier>& soldiers, const std::vector<Game:
                     if (soldier.state == Game::Soldier::SoldierState::MARCHING) {
                         vector center = soldier.pos;
                         center.x += soldier.character->size.x / 2.0f; center.y += soldier.character->size.y;
-                        soldier.pos += (Game::mapPath[i].pos - center).unit() * (deltaTime * soldier.rand * marchSpeed);
+                        soldier.pos += (Game::mapPath[i].pos - center).unit() * (deltaTime * soldier.rand * soldier.character->marchSpeed);
                     }
 
                     break;

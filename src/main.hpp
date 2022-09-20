@@ -157,7 +157,7 @@ namespace Game {
     struct Bullet {
         vector pos;
         vector vel;
-        enum BulletType { PISTOL, RIFLE, MACHINEGUN } type;
+        int damage;
         bool fromEnemy;
     };
 }
