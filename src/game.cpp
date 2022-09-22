@@ -4,12 +4,12 @@
 
 namespace Game {
     std::vector<Assets::TerrainVariant>::iterator selectedTerrainVariant;
+    std::vector<Assets::Campaign>::iterator selectedCampaign;
     std::vector<Assets::Map>::iterator selectedMap;
 
     std::vector<Assets::Faction>::iterator friendlyFaction, enemyFaction;
 
-    std::vector<Soldier> friendlies;
-    std::vector<Soldier> enemies;
+    std::vector<Soldier> friendlies, enemies;
     std::vector<MapPathPoint> mapPath;
     std::vector<Bullet> bullets;
 }
@@ -17,18 +17,6 @@ namespace Game {
 constexpr float gravity = 200.0f;
 constexpr float marchSpeed = 60.0f;
 constexpr float muzzleVelocity = 300.0f;
-
-constexpr float pistolRpm = 60.0f;
-constexpr float rifleRpm = 15.0f;
-constexpr float machinegunRpm = 550.0f;
-
-constexpr int pistolDamage = 25;
-constexpr int rifleDamage = 66;
-constexpr int machinegunDamage = 40;
-
-constexpr float pistolDistance = 10 * TILE_SIZE;
-constexpr float rifleDistance = 20 * TILE_SIZE;
-constexpr float machinegunDistance = 15 * TILE_SIZE;
 
 int musicPlayingTrack = 0;
 std::default_random_engine randgen;
@@ -152,8 +140,9 @@ bool intersectsMap(const vector& a, const vector& b) {
 }
 
 // ============== game itself ==============
-void gameSetup() {
+void mapSetup() {
     findMapPath();
+    Game::selectedTerrainVariant = getTerrainVariantByName(Game::selectedMap->terrainVariantName);
 }
 
 void updateBullets(float deltaTime) {

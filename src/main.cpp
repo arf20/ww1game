@@ -51,13 +51,10 @@ int main(int argc, const char **argv) {
     loadAssets();
     printAssets();
 
-    Game::selectedTerrainVariant = Assets::terrainVariants.begin();
-    Game::selectedMap = Assets::campaigns[0].maps.begin();
+    Game::selectedCampaign = Assets::campaigns.end();
 
     Game::friendlyFaction = Assets::factions.begin();
     Game::enemyFaction = Assets::factions.end() - 1;
-
-    gameSetup();
 
     renderSetup();
     renderLoop();

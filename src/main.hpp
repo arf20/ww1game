@@ -126,7 +126,8 @@ namespace Assets {
     struct Font {
         std::string name;
         int size;
-        TTF_Font* font;
+        TTF_Font* font12;
+        TTF_Font* font20;
     };
 
     struct Background {
@@ -188,6 +189,7 @@ namespace Assets {
 namespace Game {
     extern std::vector<Assets::Faction>::iterator friendlyFaction, enemyFaction;
     extern std::vector<Assets::TerrainVariant>::iterator selectedTerrainVariant;
+    extern std::vector<Assets::Campaign>::iterator selectedCampaign;
     extern std::vector<Assets::Map>::iterator selectedMap;
 
     extern std::vector<Soldier> friendlies;
@@ -214,7 +216,7 @@ void loadAssets();
 void soldierSpawn(const std::vector<Assets::Character>::iterator& character, bool enemy);
 void soldierDeath(const std::vector<Game::Soldier>::iterator& soldier);
 void soldierFire(const std::vector<Game::Soldier>::iterator& soldier);
-void gameSetup();
+void mapSetup();
 void gameUpdate(float deltaTime);
 
 // Inline util
@@ -251,4 +253,10 @@ inline std::vector<Assets::Character>::iterator getCharacterByNameAndFaction(std
     for (auto it = faction->characters.begin(); it < faction->characters.end(); it++)
         if (it->name == name) return it;
     return faction->characters.end();
+}
+
+inline auto getTerrainVariantByName(std::string name) {
+    for (auto it = Assets::terrainVariants.begin(); it < Assets::terrainVariants.end(); it++)
+        if (it->name == name) return it;
+    return Assets::terrainVariants.end();
 }

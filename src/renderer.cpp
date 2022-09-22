@@ -54,6 +54,8 @@ int renderText(std::string str, TTF_Font* font, int x, int y, unsigned int flags
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
 
+#define SDLC_WHITE  {255, 255, 255, 255}
+
 namespace Assets {
     std::vector<Assets::Font>::iterator defaultFont;
 
@@ -69,7 +71,7 @@ float fps = 0.0f;
 std::chrono::_V2::system_clock::time_point time_prev = std::chrono::high_resolution_clock::now();
 long frameCounter = 0;
 int anim_div = 0;
-//bool animFrame = false;
+bool inMenu = true;
 
 int screenWidth = 1280;
 int screenHeight = 720;
@@ -138,21 +140,108 @@ void renderSoldiers(std::vector<Game::Soldier>& soldiers, bool enemy) {
     }
 }
 
+void menuKeyHandler(SDL_Keycode key) {
+    if (key >= SDLK_0 && key <= SDLK_9) {
+        int itemIdx = key - SDLK_0;
+        if (Game::selectedCampaign == Assets::campaigns.end()) {
+            if (itemIdx < Assets::campaigns.size())
+                Game::selectedCampaign = Assets::campaigns.begin() + itemIdx;
+                Game::selectedMap = Game::selectedCampaign->maps.end();
+        } else {
+            if (itemIdx < Game::selectedCampaign->maps.size())
+                Game::selectedMap = Game::selectedCampaign->maps.begin() + itemIdx;
+        }
+    }
+}
+
+void renderMenu() {
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
+    SDL_RenderClear(renderer);
+
+    renderText("ww1game: arf20's arcade-ish 2D WW1 game (?)", Assets::defaultFont->font20, screenWidth / 2, 50, TEXT_CENTERX, {255, 255, 255, 255});
+
+    SDL_Rect button;
+    button.w = 400;
+    button.h = 40;
+    button.x = (screenWidth / 2) - 200;
+    SDL_SetRenderDrawColor(renderer, 224, 201, 166, 255);
+
+    if (Game::selectedCampaign == Assets::campaigns.end())
+        for (int i = 0; i < Assets::campaigns.size(); i++) {
+            button.y = 100 + (i * 60);
+            SDL_RenderFillRect(renderer, &button);
+            renderText(std::to_string(i) + ". " + Assets::campaigns[i].nameNice, Assets::defaultFont->font20, screenWidth / 2, 120 + (i * 60), TEXT_CENTERX | TEXT_CENTERY, {255, 255, 255, 255});
+        }
+    else
+        for (int i = 0; i < Game::selectedCampaign->maps.size(); i++) {
+            button.y = 100 + (i * 60);
+            SDL_RenderFillRect(renderer, &button);
+            renderText(std::to_string(i) + ". " + Game::selectedCampaign->maps[i].name, Assets::defaultFont->font20, screenWidth / 2, 120 + (i * 60), TEXT_CENTERX | TEXT_CENTERY, {255, 255, 255, 255});
+        }
+
+    if (Game::selectedCampaign != Assets::campaigns.end())
+        if (Game::selectedMap != Game::selectedCampaign->maps.end()) {
+            inMenu = false;
+            mapSetup();
+        }
+}
+
+void gameKeyHandler(SDL_Keycode key) {
+    switch (key) {
+        case SDLK_a: {
+            worldOrgX += 10;
+        } break;
+        case SDLK_d: {
+            worldOrgX -= 10;
+        } break;
+        case SDLK_e: {
+            for (Game::MapPathPoint& p : Game::mapPath)
+                if (p.type == Game::MapPathPoint::TRENCH) {
+                    p.type = Game::MapPathPoint::GROUND;
+                    break;
+                }
+        } break;
+        case SDLK_1: {
+            soldierSpawn(Game::friendlyFaction->characters.begin(), false);
+        } break;
+        case SDLK_2: {
+            soldierSpawn(Game::friendlyFaction->characters.begin() + 1, false);
+        } break;
+        case SDLK_3: {
+            soldierSpawn(Game::enemyFaction->characters.begin(), true);
+        } break;
+        case SDLK_4: {
+            soldierSpawn(Game::enemyFaction->characters.begin() + 1, true);
+        } break;
+    }
+}
+
 void renderSetup() {
     
 }
 
 void render(float deltaTime) {
-    worldOrgY = screenHeight - (TILE_SIZE * Game::selectedMap->height);
+    if (inMenu) {
+        renderMenu();
+    } else {
+        worldOrgY = screenHeight - (TILE_SIZE * Game::selectedMap->height);
 
-    renderBackground();
-    renderMap();
-    renderBullets();
-    renderSoldiers(Game::friendlies, false);
-    renderSoldiers(Game::enemies, true);
+        renderBackground();
+        renderMap();
+        renderBullets();
+        renderSoldiers(Game::friendlies, false);
+        renderSoldiers(Game::enemies, true);
+    }
 
-    if (debug)
-        renderText(std::string("fps: ") + std::to_string(fps) + " deltaTime: " + std::to_string(deltaTime), Assets::defaultFont->font, 10, 10, 0, { 255, 255, 255, 255 });
+    if (debug) {
+        renderText(std::string("fps: ") + std::to_string(fps) + " deltaTime: " + std::to_string(deltaTime), Assets::defaultFont->font12, 10, 10, 0, SDLC_WHITE);
+        std::string campaginstr = Game::selectedCampaign != Assets::campaigns.end() ? Game::selectedCampaign->nameNice : "(invalid)";
+        std::string mapstr;
+        if (Game::selectedCampaign != Assets::campaigns.end())
+            mapstr = Game::selectedMap != Game::selectedCampaign->maps.end() ? Game::selectedMap->name : "(invalid)";
+        renderText(std::string("campaign: ") + campaginstr, Assets::defaultFont->font12, 10, 24, 0, SDLC_WHITE);
+        renderText(std::string("map: ") + mapstr, Assets::defaultFont->font12, 10, 38, 0, SDLC_WHITE);
+    }
 }
 
 // public functions
@@ -172,33 +261,8 @@ void renderLoop() {
         while (SDL_PollEvent(&event)) {
             switch (event.type) {
                 case SDL_KEYDOWN: {
-                    switch (event.key.keysym.sym) {
-                        case SDLK_a: {
-                            worldOrgX += 10;
-                        } break;
-                        case SDLK_d: {
-                            worldOrgX -= 10;
-                        } break;
-                        case SDLK_e: {
-                            for (Game::MapPathPoint& p : Game::mapPath)
-                                if (p.type == Game::MapPathPoint::TRENCH) {
-                                    p.type = Game::MapPathPoint::GROUND;
-                                    break;
-                                }
-                        } break;
-                        case SDLK_1: {
-                            soldierSpawn(Game::friendlyFaction->characters.begin(), false);
-                        } break;
-                        case SDLK_2: {
-                            soldierSpawn(Game::friendlyFaction->characters.begin() + 1, false);
-                        } break;
-                        case SDLK_3: {
-                            soldierSpawn(Game::enemyFaction->characters.begin(), true);
-                        } break;
-                        case SDLK_4: {
-                            soldierSpawn(Game::enemyFaction->characters.begin() + 1, true);
-                        } break;
-                    }
+                    if (inMenu) menuKeyHandler(event.key.keysym.sym);
+                    else gameKeyHandler(event.key.keysym.sym);
                 } break;
                 case SDL_QUIT: {
                     run = false;

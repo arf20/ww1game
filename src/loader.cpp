@@ -268,7 +268,10 @@ void loadFonts() {
         Assets::Font font;
         font.name = entryFont.path().stem().string();
         font.size = 12;
-        if ((font.font = TTF_OpenFont(entryFont.path().string().c_str(), 12)) == NULL)
+        if ((font.font12 = TTF_OpenFont(entryFont.path().string().c_str(), 12)) == NULL)
+            std::cout << "Error opening font " << entryFont.path().filename() << ": " << TTF_GetError() << std::endl;
+
+        if ((font.font20 = TTF_OpenFont(entryFont.path().string().c_str(), 20)) == NULL)
             std::cout << "Error opening font " << entryFont.path().filename() << ": " << TTF_GetError() << std::endl;
 
         Assets::fonts.push_back(font);
