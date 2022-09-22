@@ -143,6 +143,8 @@ bool intersectsMap(const vector& a, const vector& b) {
 void mapSetup() {
     findMapPath();
     Game::selectedTerrainVariant = getTerrainVariantByName(Game::selectedMap->terrainVariantName);
+    Game::friendlyFaction = getFactionByName(Game::selectedMap->friendlyFactionName);
+    Game::enemyFaction = getFactionByName(Game::selectedMap->enemyFactionName);
 }
 
 void updateBullets(float deltaTime) {

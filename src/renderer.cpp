@@ -224,6 +224,8 @@ void render(float deltaTime) {
     if (inMenu) {
         renderMenu();
     } else {
+        gameUpdate(deltaTime);
+
         worldOrgY = screenHeight - (TILE_SIZE * Game::selectedMap->height);
 
         renderBackground();
@@ -239,8 +241,15 @@ void render(float deltaTime) {
         std::string mapstr;
         if (Game::selectedCampaign != Assets::campaigns.end())
             mapstr = Game::selectedMap != Game::selectedCampaign->maps.end() ? Game::selectedMap->name : "(invalid)";
+        else mapstr = "(invalid)";
         renderText(std::string("campaign: ") + campaginstr, Assets::defaultFont->font12, 10, 24, 0, SDLC_WHITE);
         renderText(std::string("map: ") + mapstr, Assets::defaultFont->font12, 10, 38, 0, SDLC_WHITE);
+
+        std::string friendlystr = Game::friendlyFaction != Assets::factions.end() ? Game::friendlyFaction->nameNice : "(invalid)";
+        std::string enemystr = Game::enemyFaction != Assets::factions.end() ? Game::enemyFaction->nameNice : "(invalid)";
+        renderText(std::string("enemy: ") + friendlystr, Assets::defaultFont->font12, 10, 52, 0, SDLC_WHITE);
+        renderText(std::string("friendly: ") + enemystr, Assets::defaultFont->font12, 10, 66, 0, SDLC_WHITE);
+
     }
 }
 
@@ -272,7 +281,6 @@ void renderLoop() {
 
         SDL_GetWindowSize(window, &screenWidth, &screenHeight);
 
-        gameUpdate(deltaTime);
         render(deltaTime);
 
         if (!run) return;

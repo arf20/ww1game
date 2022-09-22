@@ -93,7 +93,7 @@ void loadMaps() {
             while (std::getline(fileMap, line))
                 fileMapLines.push_back(line);
 
-            if (fileMapLines.size() < 3) {
+            if (fileMapLines.size() < 6) {
                 std::cout << "Invalid map format, less than 3 lines: " << entryMap.path().filename() << std::endl;
                 continue;
             }
@@ -101,8 +101,10 @@ void loadMaps() {
             map.name = fileMapLines[0];
             map.terrainVariantName = fileMapLines[1];
             map.backgroundName = fileMapLines[2];
+            map.friendlyFactionName = fileMapLines[3];
+            map.enemyFactionName = fileMapLines[4];
             
-            for (int i = 3; i < fileMapLines.size(); i++)
+            for (int i = 5; i < fileMapLines.size(); i++)
                 map.map.push_back(fileMapLines[i]);
 
             if (map.map[0].length() < 1) {

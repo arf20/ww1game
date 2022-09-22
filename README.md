@@ -90,6 +90,8 @@ assets/
 Cambrei                                                         # map title
 summer                                                          # terrain variation
 cambrei                                                         # background name
+german_empire                                                   # friendly faction
+british_empire                                                  # enemy faction
       cbbbe                                                     # map matrix
      cdaaafe                                    cbbe     
     cdaaaaafe                                  cdaafe    

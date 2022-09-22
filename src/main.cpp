@@ -53,8 +53,8 @@ int main(int argc, const char **argv) {
 
     Game::selectedCampaign = Assets::campaigns.end();
 
-    Game::friendlyFaction = Assets::factions.begin();
-    Game::enemyFaction = Assets::factions.end() - 1;
+    Game::friendlyFaction = Assets::factions.end();
+    Game::enemyFaction = Assets::factions.end();
 
     renderSetup();
     renderLoop();

@@ -79,6 +79,8 @@ namespace Assets {
         std::string name;
         std::string terrainVariantName;
         std::string backgroundName;
+        std::string friendlyFactionName;
+        std::string enemyFactionName;
         int width, height;
         std::vector<std::string> map;
     };
