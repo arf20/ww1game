@@ -198,6 +198,9 @@ namespace Game {
     extern std::vector<Soldier> enemies;
     extern std::vector<MapPathPoint> mapPath;
     extern std::vector<Bullet> bullets;
+
+    extern bool gameMode;
+    extern int money;
 }
 
 // owned by renderer

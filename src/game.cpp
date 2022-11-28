@@ -12,13 +12,15 @@ namespace Game {
     std::vector<Soldier> friendlies, enemies;
     std::vector<MapPathPoint> mapPath;
     std::vector<Bullet> bullets;
+
+    bool gameMode = true;                                       // 1 = sandbox, 0 = against AI
+    int money = 0;
 }
 
 constexpr float gravity = 200.0f;
-constexpr float marchSpeed = 60.0f;
-constexpr float muzzleVelocity = 300.0f;
 
 int musicPlayingTrack = 0;
+
 std::default_random_engine randgen;
 std::normal_distribution<double> soldierGauss(1.0, 0.1);    // variation in soldier capabilities
 std::normal_distribution<double> bulletGauss(0.0, 1.0);     // aim inaccuracy

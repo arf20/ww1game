@@ -186,6 +186,12 @@ void renderMenu() {
         }
 }
 
+void renderHud() {
+    for (int i = 0; i < Game::friendlyFaction->characters.size(); i++) {
+        
+    }
+}
+
 void gameKeyHandler(SDL_Keycode key) {
     switch (key) {
         case SDLK_a: {
@@ -247,8 +253,8 @@ void render(float deltaTime) {
 
         std::string friendlystr = Game::friendlyFaction != Assets::factions.end() ? Game::friendlyFaction->nameNice : "(invalid)";
         std::string enemystr = Game::enemyFaction != Assets::factions.end() ? Game::enemyFaction->nameNice : "(invalid)";
-        renderText(std::string("enemy: ") + friendlystr, Assets::defaultFont->font12, 10, 52, 0, SDLC_WHITE);
-        renderText(std::string("friendly: ") + enemystr, Assets::defaultFont->font12, 10, 66, 0, SDLC_WHITE);
+        renderText(std::string("friendly: ") + friendlystr, Assets::defaultFont->font12, 10, 52, 0, SDLC_WHITE);
+        renderText(std::string("enemy: ") + enemystr, Assets::defaultFont->font12, 10, 66, 0, SDLC_WHITE);
 
     }
 }
