@@ -100,6 +100,16 @@ void renderBackground() {
     renderTexture(Assets::missingTextureTexture, screenWidth, screenHeight - (Game::mapPath[0].pos.y), 0, 0, false);
 }
 
+int menuBgIdx = 0;
+
+void renderMenuBackground() {
+    auto& background = Assets::backgrounds[menuBgIdx];
+    setColor(background.skyColor);
+    SDL_RenderClear(renderer);
+    float factor = float(screenWidth) / float(background.width);
+    renderTexture(background.texture, factor * background.width, factor * background.height, 0, screenHeight - (factor * background.height), false);
+}
+
 void renderMap() {
     for (int y = 0; y < Game::selectedMap->height; y++) {
         for (int x = 0; x < Game::selectedMap->width; x++) {
@@ -163,10 +173,11 @@ void menuKeyHandler(SDL_Keycode key) {
 }
 
 void renderMenu() {
-    setColor(C_BLACK);
-    SDL_RenderClear(renderer);
+    //setColor(C_BLACK);
+    //SDL_RenderClear(renderer);
+    renderMenuBackground();
 
-    renderText("ww1game: arf20's arcade-ish 2D WW1 game (?)", Assets::defaultFont->font20, screenWidth / 2, 50, TEXT_CENTERX, {255, 255, 255, 255});
+    renderText("ww1game: arf20's arcade-ish 2D WW1 game (?)", Assets::defaultFont->font20, screenWidth / 2, 50, TEXT_CENTERX, C_BLACK);
 
     SDL_Rect button;
     button.w = 400;
@@ -238,7 +249,7 @@ void gameKeyHandler(SDL_Keycode key) {
 }
 
 void renderSetup() {
-    
+    menuBgIdx = std::rand() % Assets::backgrounds.size();
 }
 
 void render(float deltaTime) {
@@ -277,6 +288,8 @@ void render(float deltaTime) {
 
 // public functions
 void renderLoop() {
+    renderSetup();
+
     bool run = true;
     SDL_Event event;
     while (run) {

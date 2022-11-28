@@ -287,7 +287,6 @@ void gameUpdate(float deltaTime) {
     updateFaction(Game::friendlies, Game::enemies, false, deltaTime);
     updateFaction(Game::enemies, Game::friendlies, true, deltaTime);
     
-    
     if (Mix_PlayingMusic() == 0) {
         if (musicPlayingTrack >= Game::friendlyFaction->gameplayMusic.size()) musicPlayingTrack = 0;
         if (Mix_PlayMusic(Game::friendlyFaction->gameplayMusic[musicPlayingTrack].track, 0) < 0) {
