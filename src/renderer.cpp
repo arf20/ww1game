@@ -15,7 +15,7 @@ SDL_Texture* getMapTexture(char c) {
     return Assets::missingTextureTexture;
 }
 
-void renderTexture(SDL_Texture *t, int w, int h, int x, int y, bool mirror) {
+void renderTexture(SDL_Texture *t, int w, int h, int x, int y, bool mirror = false) {
     SDL_Rect rect;
     rect.h = h; rect.w = w; rect.x = x; rect.y = y;
     SDL_RendererFlip flip = mirror ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
@@ -26,7 +26,7 @@ void renderTexture(SDL_Texture *t, int w, int h, int x, int y, bool mirror) {
 #define TEXT_CENTERY    (unsigned int)2
 
 int renderText(std::string str, TTF_Font* font, int x, int y, unsigned int flags, SDL_Color color) {
-    SDL_Surface* surfaceText = TTF_RenderText_Shaded(font, str.c_str(), color, {0, 0, 0, 0});
+    SDL_Surface* surfaceText = TTF_RenderText_Blended(font, str.c_str(), color);
     SDL_Texture* textureText = SDL_CreateTextureFromSurface(renderer, surfaceText);
 
     SDL_Rect rectText;  // create a rect
@@ -49,12 +49,20 @@ int renderText(std::string str, TTF_Font* font, int x, int y, unsigned int flags
     return 0;
 }
 
+void setColor(SDL_Color c) {
+    SDL_SetRenderDrawColor(renderer, c.r, c.g, c.b, c.a);
+}
+
 
 // globals owned by renderer
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
 
-#define SDLC_WHITE  {255, 255, 255, 255}
+#define C_WHITE  {255, 255, 255, 255}
+#define C_BLACK  {0, 0, 0, 255}
+#define C_YELLOW {255, 255, 0, 255}
+#define C_RED    {255, 0, 0, 255}  
+#define C_A      {224, 201, 166, 255}
 
 namespace Assets {
     std::vector<Assets::Font>::iterator defaultFont;
@@ -81,7 +89,7 @@ int worldOrgX = 0, worldOrgY = 0;
 void renderBackground() {
     for (const Assets::Background& background : Assets::backgrounds) {
         if (background.name == Game::selectedMap->backgroundName) {
-            SDL_SetRenderDrawColor(renderer, background.skyColor.r, background.skyColor.g, background.skyColor.b, SDL_ALPHA_OPAQUE);
+            setColor(background.skyColor);
             SDL_RenderClear(renderer);
             float factor = float(screenWidth) / float(background.width);
             renderTexture(background.texture, factor * background.width, factor * background.height, 0, (worldOrgY + Game::mapPath[0].pos.y) - (factor * background.height), false);
@@ -102,8 +110,8 @@ void renderMap() {
 
     if (debug)
         for (int i = 0; i < Game::mapPath.size() - 1; i++) {
-            if (Game::mapPath[i].type == Game::MapPathPoint::GROUND) SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-            else SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
+            if (Game::mapPath[i].type == Game::MapPathPoint::GROUND) setColor(C_RED);
+            else setColor(C_YELLOW);
             SDL_RenderDrawLineF(renderer, worldOrgX + Game::mapPath[i].pos.x, worldOrgY + Game::mapPath[i].pos.y, worldOrgX + Game::mapPath[i + 1].pos.x, worldOrgY + Game::mapPath[i + 1].pos.y);
         }
 }
@@ -155,7 +163,7 @@ void menuKeyHandler(SDL_Keycode key) {
 }
 
 void renderMenu() {
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
+    setColor(C_BLACK);
     SDL_RenderClear(renderer);
 
     renderText("ww1game: arf20's arcade-ish 2D WW1 game (?)", Assets::defaultFont->font20, screenWidth / 2, 50, TEXT_CENTERX, {255, 255, 255, 255});
@@ -164,19 +172,19 @@ void renderMenu() {
     button.w = 400;
     button.h = 40;
     button.x = (screenWidth / 2) - 200;
-    SDL_SetRenderDrawColor(renderer, 224, 201, 166, 255);
+    setColor(C_A);
 
     if (Game::selectedCampaign == Assets::campaigns.end())
         for (int i = 0; i < Assets::campaigns.size(); i++) {
             button.y = 100 + (i * 60);
             SDL_RenderFillRect(renderer, &button);
-            renderText(std::to_string(i) + ". " + Assets::campaigns[i].nameNice, Assets::defaultFont->font20, screenWidth / 2, 120 + (i * 60), TEXT_CENTERX | TEXT_CENTERY, {255, 255, 255, 255});
+            renderText(std::to_string(i) + ". " + Assets::campaigns[i].nameNice, Assets::defaultFont->font20, screenWidth / 2, 120 + (i * 60), TEXT_CENTERX | TEXT_CENTERY, C_BLACK);
         }
     else
         for (int i = 0; i < Game::selectedCampaign->maps.size(); i++) {
             button.y = 100 + (i * 60);
             SDL_RenderFillRect(renderer, &button);
-            renderText(std::to_string(i) + ". " + Game::selectedCampaign->maps[i].name, Assets::defaultFont->font20, screenWidth / 2, 120 + (i * 60), TEXT_CENTERX | TEXT_CENTERY, {255, 255, 255, 255});
+            renderText(std::to_string(i) + ". " + Game::selectedCampaign->maps[i].name, Assets::defaultFont->font20, screenWidth / 2, 120 + (i * 60), TEXT_CENTERX | TEXT_CENTERY, C_BLACK);
         }
 
     if (Game::selectedCampaign != Assets::campaigns.end())
@@ -187,8 +195,15 @@ void renderMenu() {
 }
 
 void renderHud() {
+    SDL_Rect button;
+    setColor(C_A);
+
     for (int i = 0; i < Game::friendlyFaction->characters.size(); i++) {
-        
+        auto& c = Game::friendlyFaction->characters[i];
+        button.w = c.size.x; button.h = c.size.y;
+        button.x = 10 + ((10 + c.size.x) * i); button.y = screenHeight - (10 + c.size.y);
+        SDL_RenderFillRect(renderer, &button);
+        renderTexture(c.idle, c.size.x, c.size.y, button.x, button.y);
     }
 }
 
@@ -239,22 +254,23 @@ void render(float deltaTime) {
         renderBullets();
         renderSoldiers(Game::friendlies, false);
         renderSoldiers(Game::enemies, true);
+        renderHud();
     }
 
     if (debug) {
-        renderText(std::string("fps: ") + std::to_string(fps) + " deltaTime: " + std::to_string(deltaTime), Assets::defaultFont->font12, 10, 10, 0, SDLC_WHITE);
+        renderText(std::string("fps: ") + std::to_string(fps) + " deltaTime: " + std::to_string(deltaTime), Assets::defaultFont->font12, 10, 10, 0, C_BLACK);
         std::string campaginstr = Game::selectedCampaign != Assets::campaigns.end() ? Game::selectedCampaign->nameNice : "(invalid)";
         std::string mapstr;
         if (Game::selectedCampaign != Assets::campaigns.end())
             mapstr = Game::selectedMap != Game::selectedCampaign->maps.end() ? Game::selectedMap->name : "(invalid)";
         else mapstr = "(invalid)";
-        renderText(std::string("campaign: ") + campaginstr, Assets::defaultFont->font12, 10, 24, 0, SDLC_WHITE);
-        renderText(std::string("map: ") + mapstr, Assets::defaultFont->font12, 10, 38, 0, SDLC_WHITE);
+        renderText(std::string("campaign: ") + campaginstr, Assets::defaultFont->font12, 10, 24, 0, C_BLACK);
+        renderText(std::string("map: ") + mapstr, Assets::defaultFont->font12, 10, 38, 0, C_BLACK);
 
         std::string friendlystr = Game::friendlyFaction != Assets::factions.end() ? Game::friendlyFaction->nameNice : "(invalid)";
         std::string enemystr = Game::enemyFaction != Assets::factions.end() ? Game::enemyFaction->nameNice : "(invalid)";
-        renderText(std::string("friendly: ") + friendlystr, Assets::defaultFont->font12, 10, 52, 0, SDLC_WHITE);
-        renderText(std::string("enemy: ") + enemystr, Assets::defaultFont->font12, 10, 66, 0, SDLC_WHITE);
+        renderText(std::string("friendly: ") + friendlystr, Assets::defaultFont->font12, 10, 52, 0, C_BLACK);
+        renderText(std::string("enemy: ") + enemystr, Assets::defaultFont->font12, 10, 66, 0, C_BLACK);
 
     }
 }

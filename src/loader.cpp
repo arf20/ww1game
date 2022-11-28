@@ -431,6 +431,7 @@ void loadBackgrounds() {
         }
 
         background.skyColor = getPixel(surf, 0, 0);
+        background.skyColor.a = SDL_ALPHA_OPAQUE;
 
         Assets::backgrounds.push_back(background);
     }
@@ -443,7 +444,7 @@ void loadAssets() {
     if (!std::filesystem::exists(ASSET_PATH "/missing_texture.png"))
         exit_error("Missing texture placeholder texture missing");
 
-     if ((Assets::missingTextureTexture = IMG_LoadTexture(renderer, ASSET_PATH "/missing_texture.png")) == NULL)
+    if ((Assets::missingTextureTexture = IMG_LoadTexture(renderer, ASSET_PATH "/missing_texture.png")) == NULL)
         exit_error_img("IMG_LoadTexture failed on missing_texture");
 
     if (!std::filesystem::exists(ASSET_PATH "/missing_sound.ogg"))
