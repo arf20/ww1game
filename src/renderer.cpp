@@ -244,19 +244,21 @@ void gameKeyHandler(SDL_Keycode key) {
                     break;
                 }
         } break;
-        case SDLK_1: {
-            soldierSpawn(Game::friendlyFaction->characters.begin(), false);
-        } break;
-        case SDLK_2: {
-            soldierSpawn(Game::friendlyFaction->characters.begin() + 1, false);
-        } break;
-        case SDLK_3: {
-            soldierSpawn(Game::enemyFaction->characters.begin(), true);
-        } break;
-        case SDLK_4: {
-            soldierSpawn(Game::enemyFaction->characters.begin() + 1, true);
-        } break;
     }
+
+    // keys 1-5 spawn friendlies
+    if (key >= SDLK_1 && key <= SDLK_5)
+        if (key - SDLK_1 < Game::friendlyFaction->characters.size())
+            soldierSpawn(Game::friendlyFaction->characters.begin() + (key - SDLK_1), false);
+    
+    // keys 6-0 (top keyb numerical row) enemies
+    if (key >= SDLK_6 && key <= SDLK_9)
+        if (5 - (key - SDLK_6 + 1) < Game::enemyFaction->characters.size())
+            soldierSpawn(Game::enemyFaction->characters.begin() + 5 - (key - SDLK_6 + 1), true);
+
+    if (key == SDLK_0)
+        if (Game::enemyFaction->characters.size() > 0)
+            soldierSpawn(Game::enemyFaction->characters.begin(), true);
 }
 
 void renderSetup() {
