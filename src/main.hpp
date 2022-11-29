@@ -145,6 +145,7 @@ namespace Game {
         vector pos;
         vector vel;     // to be used in the future for implementing explosions
         float rand;     // a gaussian random number associated with the soldier
+        bool friendly;  // false = enemy
         std::vector<Assets::Character>::iterator character;
         enum SoldierState { IDLE, MARCHING, FIRING, DYING } prevState, state;  // 0 idle, 1 running, 2 firing, 3 dying
         int frameCounter;
@@ -201,6 +202,9 @@ namespace Game {
 
     extern bool gameMode;
     extern int money;
+
+    extern int friendlyCasualties;
+    extern int enemyCasualties;
 }
 
 // owned by renderer

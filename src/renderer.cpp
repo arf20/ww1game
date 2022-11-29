@@ -216,6 +216,17 @@ void renderHud() {
         SDL_RenderFillRect(renderer, &button);
         renderTexture(c.idle, c.size.x, c.size.y, button.x, button.y);
     }
+
+    if (Game::gameMode) {
+        int orgx = screenWidth - ((10 + Game::enemyFaction->characters[0].size.x) * Game::enemyFaction->characters.size());
+        for (int i = 0; i < Game::enemyFaction->characters.size(); i++) {
+            auto& c = Game::enemyFaction->characters[i];
+            button.w = c.size.x; button.h = c.size.y;
+            button.x = orgx + ((10 + c.size.x) * i); button.y = screenHeight - (10 + c.size.y);
+            SDL_RenderFillRect(renderer, &button);
+            renderTexture(c.idle, c.size.x, c.size.y, button.x, button.y);
+        }
+    }
 }
 
 void gameKeyHandler(SDL_Keycode key) {
@@ -283,6 +294,8 @@ void render(float deltaTime) {
         renderText(std::string("friendly: ") + friendlystr, Assets::defaultFont->font12, 10, 52, 0, C_BLACK);
         renderText(std::string("enemy: ") + enemystr, Assets::defaultFont->font12, 10, 66, 0, C_BLACK);
 
+	    renderText(std::string("friendlies: ") + std::to_string(Game::friendlies.size()) + " casualties " + std::to_string(Game::friendlyCasualties), Assets::defaultFont->font12, 10, 80, 0, C_BLACK);
+	    renderText(std::string("enemies: ") + std::to_string(Game::enemies.size()) + " casualties " + std::to_string(Game::enemyCasualties), Assets::defaultFont->font12, 10, 94, 0, C_BLACK);
     }
 }
 

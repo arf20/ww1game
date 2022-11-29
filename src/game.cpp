@@ -1,6 +1,7 @@
 #include "main.hpp"
 
 #include <random>
+#include <algorithm>
 
 namespace Game {
     std::vector<Assets::TerrainVariant>::iterator selectedTerrainVariant;
@@ -15,6 +16,9 @@ namespace Game {
 
     bool gameMode = true;                                       // 1 = sandbox, 0 = against AI
     int money = 0;
+
+    int friendlyCasualties = 0;
+    int enemyCasualties = 0;
 }
 
 constexpr float gravity = 200.0f;
@@ -33,10 +37,12 @@ void soldierSpawn(const std::vector<Assets::Character>::iterator& character, boo
         // enemy spawn point
         soldier.pos.y = Game::mapPath[Game::mapPath.size() - 1].pos.y - soldier.character->size.y;
         soldier.pos.x = Game::mapPath[Game::mapPath.size() - 1].pos.x - 10;
+        soldier.friendly = false;
     } else {
         // friendly spawn point
         soldier.pos.y = Game::mapPath[0].pos.y - soldier.character->size.y;
         soldier.pos.x = 10;
+        soldier.friendly = true;
     }
     soldier.vel = { 0.0f, 0.0f };
     soldier.state = Game::Soldier::MARCHING;
@@ -55,6 +61,10 @@ void soldierDeath(const std::vector<Game::Soldier>::iterator& soldier) {
     if (soldier->state == Game::Soldier::DYING) return;
     soldier->state = Game::Soldier::DYING;
     soldier->frameCounter = 0;
+
+    // enemy or friendly... improve this
+    if (soldier->friendly) Game::friendlyCasualties++;
+    else Game::enemyCasualties++;
 }
 
 void soldierFire(const std::vector<Game::Soldier>::iterator& soldier) {
@@ -200,7 +210,8 @@ void updateFaction(std::vector<Game::Soldier>& soldiers, const std::vector<Game:
         Game::Soldier& soldier = *it;
 
         // soldier die when health runs out
-        if (soldier.health <= 0) soldierDeath(it);
+        if (soldier.health <= 0)
+            soldierDeath(it);
 
         if (soldier.state == Game::Soldier::DYING) {
             if (soldier.frameCounter >= soldier.character->death.size()) soldiers.erase(it);
