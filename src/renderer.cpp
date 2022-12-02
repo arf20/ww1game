@@ -206,6 +206,7 @@ void renderMenu() {
 }
 
 void renderHud() {
+    // Render soldiers
     SDL_Rect button;
     setColor(C_A);
 
@@ -214,6 +215,7 @@ void renderHud() {
         button.w = c.size.x; button.h = c.size.y;
         button.x = 10 + ((10 + c.size.x) * i); button.y = screenHeight - (10 + c.size.y);
         SDL_RenderFillRect(renderer, &button);
+        renderText(c.nameNice, Assets::defaultFont->font12, button.x + button.w / 2, button.y, TEXT_CENTERX, C_BLACK);
         renderTexture(c.idle, c.size.x, c.size.y, button.x, button.y);
     }
 
@@ -224,6 +226,7 @@ void renderHud() {
             button.w = c.size.x; button.h = c.size.y;
             button.x = orgx + ((10 + c.size.x) * i); button.y = screenHeight - (10 + c.size.y);
             SDL_RenderFillRect(renderer, &button);
+            renderText(c.nameNice, Assets::defaultFont->font12, button.x + button.w / 2, button.y, TEXT_CENTERX, C_BLACK);
             renderTexture(c.idle, c.size.x, c.size.y, button.x, button.y);
         }
     }
