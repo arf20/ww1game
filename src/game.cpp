@@ -12,6 +12,8 @@ namespace Game {
 
     std::vector<Soldier> friendlies, enemies;
     std::vector<MapPathPoint> mapPath;
+    std::vector<MapPathPoint>::iterator friendlyObjective;
+    std::vector<MapPathPoint>::iterator enemyObjective;
     std::vector<Bullet> bullets;
 
     bool gameMode = true;                                       // 1 = sandbox, 0 = against AI
@@ -19,6 +21,9 @@ namespace Game {
 
     int friendlyCasualties = 0;
     int enemyCasualties = 0;
+
+    int friendliesHoldingbjective = 0;
+    int enemiesHoldingObjective = 0;
 }
 
 constexpr float gravity = 200.0f;
@@ -36,12 +41,12 @@ void soldierSpawn(const std::vector<Assets::Character>::iterator& character, boo
     if (enemy) {
         // enemy spawn point
         soldier.pos.y = Game::mapPath[Game::mapPath.size() - 1].pos.y - soldier.character->size.y;
-        soldier.pos.x = Game::mapPath[Game::mapPath.size() - 1].pos.x - 10;
+        soldier.pos.x = Game::mapPath[Game::mapPath.size() - 1].pos.x - (soldier.character->size.x / 2.0f) - 1.0f;
         soldier.friendly = false;
     } else {
         // friendly spawn point
         soldier.pos.y = Game::mapPath[0].pos.y - soldier.character->size.y;
-        soldier.pos.x = 10;
+        soldier.pos.x = Game::mapPath[0].pos.x - (soldier.character->size.x / 2.0f) + 1.0f;
         soldier.friendly = true;
     }
     soldier.vel = { 0.0f, 0.0f };
@@ -96,17 +101,44 @@ void findMapPath() {
         point.type = Game::MapPathPoint::GROUND;
 
         if (my < prevmy) {
-            point.pos = {float(TILE_SIZE * mx), float(TILE_SIZE * (my + 1))}; Game::mapPath.push_back(point);
-            point.pos = {float(TILE_SIZE * (mx + 1)), float(TILE_SIZE * my)}; Game::mapPath.push_back(point);
+            point.pos = {float(TILE_SIZE * mx), float(TILE_SIZE * (my + 1))};
+            Game::mapPath.push_back(point);
+            point.pos = {float(TILE_SIZE * (mx + 1)), float(TILE_SIZE * my)};
+            Game::mapPath.push_back(point);
         } else {
-            point.pos = {float(TILE_SIZE * mx), float(TILE_SIZE * my)}; Game::mapPath.push_back(point);
+            point.pos = {float(TILE_SIZE * mx), float(TILE_SIZE * my)};
+            Game::mapPath.push_back(point);
         }
 
         if (Game::selectedMap->map[my][mx] == 't') {
             point.type = Game::MapPathPoint::TRENCH;
-            point.pos = {float((TILE_SIZE * mx) + (TILE_SIZE / 2)), float(TILE_SIZE * (my + 1))}; Game::mapPath.push_back(point);
+            point.pos = {float((TILE_SIZE * mx) + (TILE_SIZE / 2)), float(TILE_SIZE * (my + 1))};
+            Game::mapPath.push_back(point);
         }
         prevmy = my;
+    }
+
+    // append two points further in the edges
+    Game::MapPathPoint point;
+    point.type = Game::MapPathPoint::GROUND;
+    point.pos = { Game::mapPath[0].pos.x - 40.0f, Game::mapPath[0].pos.y};
+    Game::mapPath.insert(Game::mapPath.begin(), point);
+
+    point.pos = { Game::mapPath[Game::mapPath.size() - 1].pos.x + 80.0f, Game::mapPath[0].pos.y};
+    Game::mapPath.push_back(point);
+
+    for (int i = 0; i < Game::mapPath.size(); i++) {
+        if (Game::mapPath[i].type == Game::MapPathPoint::TRENCH) {
+            Game::enemyObjective = Game::mapPath.begin() + i;
+            break;
+        }
+    }
+
+    for (int i = Game::mapPath.size() - 1; i >= 0; i--) {
+        if (Game::mapPath[i].type == Game::MapPathPoint::TRENCH) {
+            Game::friendlyObjective = Game::mapPath.begin() + i;
+            break;
+        }
     }
 }
 
@@ -204,12 +236,12 @@ auto findNearestTarget(const Game::Soldier& soldier, const std::vector<Game::Sol
     return nearestEnemy;
 }
 
-// targetEnemies relatively to 'soldiers'
+// targetEnemies relative to 'soldiers'
 void updateFaction(std::vector<Game::Soldier>& soldiers, const std::vector<Game::Soldier>& targetEnemies, bool dir, float deltaTime) {
     for (auto it = soldiers.begin(); it < soldiers.end(); it++) {
         Game::Soldier& soldier = *it;
 
-        // soldier die when health runs out
+        // soldier dies when health runs out
         if (soldier.health <= 0)
             soldierDeath(it);
 
@@ -289,11 +321,22 @@ void updateFaction(std::vector<Game::Soldier>& soldiers, const std::vector<Game:
                 }
             }
         }
+
+        if (soldier.friendly) {
+            if (abs(soldier.pos.x - Game::friendlyObjective->pos.x) < TILE_SIZE)
+                Game::friendliesHoldingbjective++;
+        }
+        else
+            if (abs(soldier.pos.x - Game::enemyObjective->pos.x) < TILE_SIZE)
+                Game::enemiesHoldingObjective++;
     }
 }
 
 void gameUpdate(float deltaTime) {
     updateBullets(deltaTime);
+
+    Game::friendliesHoldingbjective = 0;
+    Game::enemiesHoldingObjective = 0;
 
     updateFaction(Game::friendlies, Game::enemies, false, deltaTime);
     updateFaction(Game::enemies, Game::friendlies, true, deltaTime);

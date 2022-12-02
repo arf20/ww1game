@@ -62,6 +62,7 @@ SDL_Renderer *renderer = NULL;
 #define C_BLACK  {0, 0, 0, 255}
 #define C_YELLOW {255, 255, 0, 255}
 #define C_RED    {255, 0, 0, 255}  
+#define C_GREEN  {0, 255, 0}
 #define C_A      {224, 201, 166, 255}
 
 namespace Assets {
@@ -118,12 +119,18 @@ void renderMap() {
         }
     }
 
-    if (debug)
+    if (debug) {
         for (int i = 0; i < Game::mapPath.size() - 1; i++) {
             if (Game::mapPath[i].type == Game::MapPathPoint::GROUND) setColor(C_RED);
             else setColor(C_YELLOW);
             SDL_RenderDrawLineF(renderer, worldOrgX + Game::mapPath[i].pos.x, worldOrgY + Game::mapPath[i].pos.y, worldOrgX + Game::mapPath[i + 1].pos.x, worldOrgY + Game::mapPath[i + 1].pos.y);
         }
+
+        setColor(C_RED);
+        SDL_RenderDrawLineF(renderer, worldOrgX + Game::enemyObjective->pos.x, worldOrgY + Game::enemyObjective->pos.y, worldOrgX + Game::enemyObjective->pos.x, worldOrgY + Game::enemyObjective->pos.y - 100);
+        setColor(C_GREEN);
+        SDL_RenderDrawLineF(renderer, worldOrgX + Game::friendlyObjective->pos.x, worldOrgY + Game::friendlyObjective->pos.y, worldOrgX + Game::friendlyObjective->pos.x, worldOrgY + Game::friendlyObjective->pos.y - 100);
+    }
 }
 
 void renderBullets() {
@@ -299,8 +306,12 @@ void render(float deltaTime) {
         renderText(std::string("friendly: ") + friendlystr, Assets::defaultFont->font12, 10, 52, 0, C_BLACK);
         renderText(std::string("enemy: ") + enemystr, Assets::defaultFont->font12, 10, 66, 0, C_BLACK);
 
-	    renderText(std::string("friendlies: ") + std::to_string(Game::friendlies.size()) + " casualties " + std::to_string(Game::friendlyCasualties), Assets::defaultFont->font12, 10, 80, 0, C_BLACK);
-	    renderText(std::string("enemies: ") + std::to_string(Game::enemies.size()) + " casualties " + std::to_string(Game::enemyCasualties), Assets::defaultFont->font12, 10, 94, 0, C_BLACK);
+	    renderText(std::string("friendlies: ") + std::to_string(Game::friendlies.size())
+            + ", casualties " + std::to_string(Game::friendlyCasualties)
+            + ", holding " + std::to_string(Game::friendliesHoldingbjective), Assets::defaultFont->font12, 10, 80, 0, C_BLACK);
+	    renderText(std::string("enemies: ") + std::to_string(Game::enemies.size())
+            + ", casualties " + std::to_string(Game::enemyCasualties)
+            + ", holding " + std::to_string(Game::enemiesHoldingObjective), Assets::defaultFont->font12, 10, 94, 0, C_BLACK);
     }
 }
 

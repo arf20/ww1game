@@ -25,9 +25,8 @@ make install
 ```
 
 ## Run
-Currently you can only
 ```
-./src/ww1game
+./ww1game
 ```
 will be changed later
 

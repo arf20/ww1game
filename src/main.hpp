@@ -198,6 +198,8 @@ namespace Game {
     extern std::vector<Soldier> friendlies;
     extern std::vector<Soldier> enemies;
     extern std::vector<MapPathPoint> mapPath;
+    extern std::vector<MapPathPoint>::iterator friendlyObjective;
+    extern std::vector<MapPathPoint>::iterator enemyObjective;
     extern std::vector<Bullet> bullets;
 
     extern bool gameMode;
@@ -205,6 +207,9 @@ namespace Game {
 
     extern int friendlyCasualties;
     extern int enemyCasualties;
+
+    extern int friendliesHoldingbjective;
+    extern int enemiesHoldingObjective;
 }
 
 // owned by renderer
