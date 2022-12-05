@@ -190,16 +190,16 @@ namespace Assets {
 
 // owned by game
 namespace Game {
-    extern std::vector<Assets::Faction>::iterator friendlyFaction, enemyFaction;
     extern std::vector<Assets::TerrainVariant>::iterator selectedTerrainVariant;
     extern std::vector<Assets::Campaign>::iterator selectedCampaign;
     extern std::vector<Assets::Map>::iterator selectedMap;
 
-    extern std::vector<Soldier> friendlies;
-    extern std::vector<Soldier> enemies;
-    extern std::vector<MapPathPoint> mapPath;
-    extern std::vector<MapPathPoint>::iterator friendlyObjective;
-    extern std::vector<MapPathPoint>::iterator enemyObjective;
+    extern std::vector<Assets::Faction>::iterator friendlyFaction, enemyFaction;
+
+    extern std::vector<Soldier> friendlies, enemies;
+    extern std::vector<MapPathPoint> friendlyMapPath, enemyMapPath;
+    extern std::vector<MapPathPoint>::iterator friendlyObjective, enemyObjective;
+
     extern std::vector<Bullet> bullets;
 
     extern bool gameMode;

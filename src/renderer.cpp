@@ -76,6 +76,8 @@ namespace Assets {
 // local stuff
 #define ANIM_FPS    7
 
+bool run = true;
+
 float fps = 0.0f;
 std::chrono::_V2::system_clock::time_point time_prev = std::chrono::high_resolution_clock::now();
 long frameCounter = 0;
@@ -93,12 +95,12 @@ void renderBackground() {
             setColor(background.skyColor);
             SDL_RenderClear(renderer);
             float factor = float(screenWidth) / float(background.width);
-            renderTexture(background.texture, factor * background.width, factor * background.height, 0, (worldOrgY + Game::mapPath[0].pos.y) - (factor * background.height), false);
+            renderTexture(background.texture, factor * background.width, factor * background.height, 0, (worldOrgY + Game::friendlyMapPath[0].pos.y) - (factor * background.height), false);
             return;
         }
     }
 
-    renderTexture(Assets::missingTextureTexture, screenWidth, screenHeight - (Game::mapPath[0].pos.y), 0, 0, false);
+    renderTexture(Assets::missingTextureTexture, screenWidth, screenHeight - (Game::friendlyMapPath[0].pos.y), 0, 0, false);
 }
 
 int menuBgIdx = 0;
@@ -120,10 +122,16 @@ void renderMap() {
     }
 
     if (debug) {
-        for (int i = 0; i < Game::mapPath.size() - 1; i++) {
-            if (Game::mapPath[i].type == Game::MapPathPoint::GROUND) setColor(C_RED);
+        for (int i = 0; i < Game::friendlyMapPath.size() - 1; i++) {
+            if (Game::friendlyMapPath[i].type == Game::MapPathPoint::GROUND) setColor(C_RED);
             else setColor(C_YELLOW);
-            SDL_RenderDrawLineF(renderer, worldOrgX + Game::mapPath[i].pos.x, worldOrgY + Game::mapPath[i].pos.y, worldOrgX + Game::mapPath[i + 1].pos.x, worldOrgY + Game::mapPath[i + 1].pos.y);
+            SDL_RenderDrawLineF(renderer, worldOrgX + Game::friendlyMapPath[i].pos.x, worldOrgY + Game::friendlyMapPath[i].pos.y, worldOrgX + Game::friendlyMapPath[i + 1].pos.x, worldOrgY + Game::friendlyMapPath[i + 1].pos.y);
+        }
+
+        for (int i = 0; i < Game::enemyMapPath.size() - 1; i++) {
+            if (Game::enemyMapPath[i].type == Game::MapPathPoint::GROUND) setColor(C_RED);
+            else setColor(C_YELLOW);
+            SDL_RenderDrawLineF(renderer, worldOrgX + Game::enemyMapPath[i].pos.x, worldOrgY + Game::enemyMapPath[i].pos.y, worldOrgX + Game::enemyMapPath[i + 1].pos.x, worldOrgY + Game::enemyMapPath[i + 1].pos.y);
         }
 
         setColor(C_RED);
@@ -241,18 +249,32 @@ void renderHud() {
 
 void gameKeyHandler(SDL_Keycode key) {
     switch (key) {
+        case SDLK_c: {
+            run = false;
+        } break;
         case SDLK_a: {
             worldOrgX += 10;
         } break;
         case SDLK_d: {
             worldOrgX -= 10;
         } break;
-        case SDLK_e: {
-            for (Game::MapPathPoint& p : Game::mapPath)
+        case SDLK_q: {
+            for (int i = 0; i < Game::friendlyMapPath.size(); i++) {
+                auto& p = Game::friendlyMapPath[i];
                 if (p.type == Game::MapPathPoint::TRENCH) {
                     p.type = Game::MapPathPoint::GROUND;
                     break;
                 }
+            }
+        } break;
+        case SDLK_e: {
+            for (int i = Game::enemyMapPath.size() - 1; i >= 0; i--) {
+                auto& p = Game::enemyMapPath[i];
+                if (p.type == Game::MapPathPoint::TRENCH) {
+                    p.type = Game::MapPathPoint::GROUND;
+                    break;
+                }
+            }
         } break;
     }
 
@@ -319,7 +341,6 @@ void render(float deltaTime) {
 void renderLoop() {
     renderSetup();
 
-    bool run = true;
     SDL_Event event;
     while (run) {
         //Uint32 time_now = SDL_GetTicks();
@@ -386,5 +407,5 @@ void destroySDL() {
     Mix_Quit();
     TTF_Quit();
     IMG_Quit();
-    SDL_Quit();
+    //SDL_Quit();   // this hangs, SDL_Quit might been have called earlier
 }

@@ -11,9 +11,9 @@ namespace Game {
     std::vector<Assets::Faction>::iterator friendlyFaction, enemyFaction;
 
     std::vector<Soldier> friendlies, enemies;
-    std::vector<MapPathPoint> mapPath;
-    std::vector<MapPathPoint>::iterator friendlyObjective;
-    std::vector<MapPathPoint>::iterator enemyObjective;
+    std::vector<MapPathPoint> friendlyMapPath, enemyMapPath;
+    std::vector<MapPathPoint>::iterator friendlyObjective, enemyObjective;
+    
     std::vector<Bullet> bullets;
 
     bool gameMode = true;                                       // 1 = sandbox, 0 = against AI
@@ -40,13 +40,13 @@ void soldierSpawn(const std::vector<Assets::Character>::iterator& character, boo
     soldier.character = character;
     if (enemy) {
         // enemy spawn point
-        soldier.pos.y = Game::mapPath[Game::mapPath.size() - 1].pos.y - soldier.character->size.y;
-        soldier.pos.x = Game::mapPath[Game::mapPath.size() - 1].pos.x - (soldier.character->size.x / 2.0f) - 1.0f;
+        soldier.pos.y = Game::enemyMapPath[Game::enemyMapPath.size() - 1].pos.y - soldier.character->size.y;
+        soldier.pos.x = Game::enemyMapPath[Game::enemyMapPath.size() - 1].pos.x - (soldier.character->size.x / 2.0f) - 1.0f;
         soldier.friendly = false;
     } else {
         // friendly spawn point
-        soldier.pos.y = Game::mapPath[0].pos.y - soldier.character->size.y;
-        soldier.pos.x = Game::mapPath[0].pos.x - (soldier.character->size.x / 2.0f) + 1.0f;
+        soldier.pos.y = Game::friendlyMapPath[0].pos.y - soldier.character->size.y;
+        soldier.pos.x = Game::friendlyMapPath[0].pos.x - (soldier.character->size.x / 2.0f) + 1.0f;
         soldier.friendly = true;
     }
     soldier.vel = { 0.0f, 0.0f };
@@ -102,18 +102,18 @@ void findMapPath() {
 
         if (my < prevmy) {
             point.pos = {float(TILE_SIZE * mx), float(TILE_SIZE * (my + 1))};
-            Game::mapPath.push_back(point);
+            Game::friendlyMapPath.push_back(point);
             point.pos = {float(TILE_SIZE * (mx + 1)), float(TILE_SIZE * my)};
-            Game::mapPath.push_back(point);
+            Game::friendlyMapPath.push_back(point);
         } else {
             point.pos = {float(TILE_SIZE * mx), float(TILE_SIZE * my)};
-            Game::mapPath.push_back(point);
+            Game::friendlyMapPath.push_back(point);
         }
 
         if (Game::selectedMap->map[my][mx] == 't') {
             point.type = Game::MapPathPoint::TRENCH;
             point.pos = {float((TILE_SIZE * mx) + (TILE_SIZE / 2)), float(TILE_SIZE * (my + 1))};
-            Game::mapPath.push_back(point);
+            Game::friendlyMapPath.push_back(point);
         }
         prevmy = my;
     }
@@ -121,22 +121,26 @@ void findMapPath() {
     // append two points further in the edges
     Game::MapPathPoint point;
     point.type = Game::MapPathPoint::GROUND;
-    point.pos = { Game::mapPath[0].pos.x - 40.0f, Game::mapPath[0].pos.y};
-    Game::mapPath.insert(Game::mapPath.begin(), point);
+    point.pos = { Game::friendlyMapPath[0].pos.x - 40.0f, Game::friendlyMapPath[0].pos.y};
+    Game::friendlyMapPath.insert(Game::friendlyMapPath.begin(), point);
 
-    point.pos = { Game::mapPath[Game::mapPath.size() - 1].pos.x + 80.0f, Game::mapPath[0].pos.y};
-    Game::mapPath.push_back(point);
+    point.pos = { Game::friendlyMapPath[Game::friendlyMapPath.size() - 1].pos.x + 80.0f, Game::friendlyMapPath[0].pos.y};
+    Game::friendlyMapPath.push_back(point);
 
-    for (int i = 0; i < Game::mapPath.size(); i++) {
-        if (Game::mapPath[i].type == Game::MapPathPoint::TRENCH) {
-            Game::enemyObjective = Game::mapPath.begin() + i;
+    // copy friendly path to enemy path, they are the same
+    Game::enemyMapPath = Game::friendlyMapPath;
+
+    // get objectives
+    for (int i = 0; i < Game::friendlyMapPath.size(); i++) {
+        if (Game::friendlyMapPath[i].type == Game::MapPathPoint::TRENCH) {
+            Game::enemyObjective = Game::friendlyMapPath.begin() + i;
             break;
         }
     }
 
-    for (int i = Game::mapPath.size() - 1; i >= 0; i--) {
-        if (Game::mapPath[i].type == Game::MapPathPoint::TRENCH) {
-            Game::friendlyObjective = Game::mapPath.begin() + i;
+    for (int i = Game::enemyMapPath.size() - 1; i >= 0; i--) {
+        if (Game::enemyMapPath[i].type == Game::MapPathPoint::TRENCH) {
+            Game::friendlyObjective = Game::enemyMapPath.begin() + i;
             break;
         }
     }
@@ -175,8 +179,8 @@ bool doIntersect(vector p1, vector q1, vector p2, vector q2) {
 }
 
 bool intersectsMap(const vector& a, const vector& b) {
-    for (int i = 0; i < Game::mapPath.size() - 2; i++) {
-        if (doIntersect(a, b, Game::mapPath[i].pos, Game::mapPath[i + 1].pos)) {
+    for (int i = 0; i < Game::friendlyMapPath.size() - 2; i++) {
+        if (doIntersect(a, b, Game::friendlyMapPath[i].pos, Game::friendlyMapPath[i + 1].pos)) {
             return true;
         }
     }
@@ -199,7 +203,7 @@ void updateBullets(float deltaTime) {
         vector b2 = bullet.pos;
 
         // if out of the map
-        if (bullet.pos.x < 0.0f || bullet.pos.x > Game::mapPath[Game::mapPath.size() - 1].pos.x) { Game::bullets.erase(it); continue; }
+        if (bullet.pos.x < 0.0f || bullet.pos.x > Game::friendlyMapPath[Game::friendlyMapPath.size() - 1].pos.x) { Game::bullets.erase(it); continue; }
 
         // map collision, intersect travel segment with all map segments
         if (intersectsMap(b1, b2)) {
@@ -237,7 +241,7 @@ auto findNearestTarget(const Game::Soldier& soldier, const std::vector<Game::Sol
 }
 
 // targetEnemies relative to 'soldiers'
-void updateFaction(std::vector<Game::Soldier>& soldiers, const std::vector<Game::Soldier>& targetEnemies, bool dir, float deltaTime) {
+void updateFaction(std::vector<Game::Soldier>& soldiers, const std::vector<Game::Soldier>& targetEnemies, float deltaTime) {
     for (auto it = soldiers.begin(); it < soldiers.end(); it++) {
         Game::Soldier& soldier = *it;
 
@@ -271,7 +275,7 @@ void updateFaction(std::vector<Game::Soldier>& soldiers, const std::vector<Game:
                     vector polarVel = vel.toPolar();
                     polarVel.x += soldier.character->spread * bulletGauss(randgen);
                     vel = vectorFromPolar(polarVel);
-                    bulletSpawn(muzzlePoint, vel, soldier.character->roundDamage, dir);
+                    bulletSpawn(muzzlePoint, vel, soldier.character->roundDamage, !soldier.friendly);
                     soldier.cooldownTime = soldier.character->rpm / 60.0f;
                     Mix_PlayChannel(-1, soldier.character->fireSnd, 0);
                 }
@@ -280,11 +284,11 @@ void updateFaction(std::vector<Game::Soldier>& soldiers, const std::vector<Game:
         soldier.cooldownTime -= deltaTime;
 
         mapcalc:
-        if (!dir) {   // advance direction: false = right, true = left
-            for (int i = 1; i < Game::mapPath.size(); i++) {
-                if (Game::mapPath[i].pos.x > soldier.pos.x + (soldier.character->size.x / 2.0f)) {
+        if (soldier.friendly) {   // friendly
+            for (int i = 1; i < Game::friendlyMapPath.size(); i++) {
+                if (Game::friendlyMapPath[i].pos.x > soldier.pos.x + (soldier.character->size.x / 2.0f)) {
                     if (mapcheck)
-                        if (Game::mapPath[i - 1].type == Game::MapPathPoint::GROUND) {
+                        if (Game::friendlyMapPath[i - 1].type == Game::MapPathPoint::GROUND) {
                             soldier.prevState = soldier.state;
                             soldier.state = Game::Soldier::MARCHING;
                         } else {
@@ -294,17 +298,17 @@ void updateFaction(std::vector<Game::Soldier>& soldiers, const std::vector<Game:
                     if (soldier.state == Game::Soldier::SoldierState::MARCHING) {
                         vector center = soldier.pos;
                         center.x += soldier.character->size.x / 2.0f; center.y += soldier.character->size.y;
-                        soldier.pos += (Game::mapPath[i].pos - center).unit() * (deltaTime * soldier.rand * soldier.character->marchSpeed);
+                        soldier.pos += (Game::friendlyMapPath[i].pos - center).unit() * (deltaTime * soldier.rand * soldier.character->marchSpeed);
                     }
                     break;
                 }
             }
         }
         else {
-            for (int i = Game::mapPath.size() - 2; i >= 0; i--) {
-                if (Game::mapPath[i].pos.x < soldier.pos.x + (soldier.character->size.x / 2.0f)) {
+            for (int i = Game::enemyMapPath.size() - 2; i >= 0; i--) {
+                if (Game::enemyMapPath[i].pos.x < soldier.pos.x + (soldier.character->size.x / 2.0f)) {
                     if (mapcheck)
-                        if (Game::mapPath[i + 1].type == Game::MapPathPoint::GROUND) {
+                        if (Game::enemyMapPath[i + 1].type == Game::MapPathPoint::GROUND) {
                             soldier.prevState = soldier.state;
                             soldier.state = Game::Soldier::MARCHING;
                         } else {
@@ -314,7 +318,7 @@ void updateFaction(std::vector<Game::Soldier>& soldiers, const std::vector<Game:
                     if (soldier.state == Game::Soldier::SoldierState::MARCHING) {
                         vector center = soldier.pos;
                         center.x += soldier.character->size.x / 2.0f; center.y += soldier.character->size.y;
-                        soldier.pos += (Game::mapPath[i].pos - center).unit() * (deltaTime * soldier.rand * soldier.character->marchSpeed);
+                        soldier.pos += (Game::enemyMapPath[i].pos - center).unit() * (deltaTime * soldier.rand * soldier.character->marchSpeed);
                     }
 
                     break;
@@ -338,8 +342,8 @@ void gameUpdate(float deltaTime) {
     Game::friendliesHoldingbjective = 0;
     Game::enemiesHoldingObjective = 0;
 
-    updateFaction(Game::friendlies, Game::enemies, false, deltaTime);
-    updateFaction(Game::enemies, Game::friendlies, true, deltaTime);
+    updateFaction(Game::friendlies, Game::enemies, deltaTime);
+    updateFaction(Game::enemies, Game::friendlies, deltaTime);
     
     if (Mix_PlayingMusic() == 0) {
         if (musicPlayingTrack >= Game::friendlyFaction->gameplayMusic.size()) musicPlayingTrack = 0;
