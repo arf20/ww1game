@@ -254,14 +254,21 @@ void updateFaction(std::vector<Game::Soldier>& soldiers, const std::vector<Game:
             continue;
         }
 
+        // fint target
         auto nearestTarget = findNearestTarget(soldier, targetEnemies);
 
         bool mapcheck = true;
         if (nearestTarget != targetEnemies.end()) {
-            vector muzzlePoint = {soldier.pos.x + (2.0f * soldier.character->size.x / 3.0f), soldier.pos.y + (soldier.character->size.x / 3.0f)};
-            vector targetPoint = (nearestTarget->character->size / 2.0f) + nearestTarget->pos;
+            vector muzzlePoint = {soldier.pos.x + (1.0f * soldier.character->size.x / 4.0f), soldier.pos.y + (soldier.character->size.x / 3.0f)};
+            vector targetPointBody = (nearestTarget->character->size / 2.0f) + nearestTarget->pos;
+            vector targetPointHead = nearestTarget->pos; targetPointHead.y += nearestTarget->character->size.y / 4.0f;
 
-            if (intersectsMap(muzzlePoint, targetPoint)) goto mapcalc;
+            bool aimToHead = false;
+            if (intersectsMap(muzzlePoint, targetPointBody)) {
+                aimToHead = true;
+                if (intersectsMap(muzzlePoint, targetPointHead))
+                    goto mapcalc;
+            }
 
             mapcheck = false;
             if (soldier.state != Game::Soldier::FIRING) {
@@ -271,7 +278,7 @@ void updateFaction(std::vector<Game::Soldier>& soldiers, const std::vector<Game:
             if (soldier.cooldownTime <= 0.0f) {
                 soldierFire(it);
                 if (soldier.frameCounter == soldier.character->fireFrame) {
-                    vector vel = (targetPoint - muzzlePoint).unit() * soldier.character->muzzleVel;
+                    vector vel = ((aimToHead ? targetPointHead : targetPointBody) - muzzlePoint).unit() * soldier.character->muzzleVel;
                     vector polarVel = vel.toPolar();
                     polarVel.x += soldier.character->spread * bulletGauss(randgen);
                     vel = vectorFromPolar(polarVel);
