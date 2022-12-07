@@ -131,16 +131,16 @@ void findMapPath() {
     Game::enemyMapPath = Game::friendlyMapPath;
 
     // get objectives
-    for (int i = 0; i < Game::friendlyMapPath.size(); i++) {
+    for (int i = Game::friendlyMapPath.size() - 1; i >= 0; i--) {
         if (Game::friendlyMapPath[i].type == Game::MapPathPoint::TRENCH) {
-            Game::enemyObjective = Game::friendlyMapPath.begin() + i;
+            Game::friendlyObjective = Game::friendlyMapPath.begin() + i;
             break;
         }
     }
 
-    for (int i = Game::enemyMapPath.size() - 1; i >= 0; i--) {
+    for (int i = 0; i < Game::enemyMapPath.size(); i++) {
         if (Game::enemyMapPath[i].type == Game::MapPathPoint::TRENCH) {
-            Game::friendlyObjective = Game::enemyMapPath.begin() + i;
+            Game::enemyObjective = Game::enemyMapPath.begin() + i;
             break;
         }
     }

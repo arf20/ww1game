@@ -262,7 +262,8 @@ void gameKeyHandler(SDL_Keycode key) {
             for (int i = 0; i < Game::friendlyMapPath.size(); i++) {
                 auto& p = Game::friendlyMapPath[i];
                 if (p.type == Game::MapPathPoint::TRENCH) {
-                    p.type = Game::MapPathPoint::GROUND;
+                    if (Game::friendlyObjective != (Game::friendlyMapPath.begin() + i))
+                        p.type = Game::MapPathPoint::GROUND;
                     break;
                 }
             }
@@ -271,7 +272,8 @@ void gameKeyHandler(SDL_Keycode key) {
             for (int i = Game::enemyMapPath.size() - 1; i >= 0; i--) {
                 auto& p = Game::enemyMapPath[i];
                 if (p.type == Game::MapPathPoint::TRENCH) {
-                    p.type = Game::MapPathPoint::GROUND;
+                    if (Game::enemyObjective != (Game::enemyMapPath.begin() + i))
+                        p.type = Game::MapPathPoint::GROUND;
                     break;
                 }
             }
