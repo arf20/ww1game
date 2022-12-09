@@ -98,7 +98,8 @@ void findMapPath() {
         while (Game::selectedMap->map[my][mx] == ' ') { my++; }
 
         Game::MapPathPoint point;
-        point.type = Game::MapPathPoint::GROUND;
+        point.type = Game::MapPathPoint::GROUND;    // when GROUND, action is ignored
+        point.action = Game::MapPathPoint::MARCH;
 
         if (my < prevmy) {
             point.pos = {float(TILE_SIZE * mx), float(TILE_SIZE * (my + 1))};
@@ -112,6 +113,7 @@ void findMapPath() {
 
         if (Game::selectedMap->map[my][mx] == 't') {
             point.type = Game::MapPathPoint::TRENCH;
+            point.action = Game::MapPathPoint::HOLD;
             point.pos = {float((TILE_SIZE * mx) + (TILE_SIZE / 2)), float(TILE_SIZE * (my + 1))};
             Game::friendlyMapPath.push_back(point);
         }
@@ -121,6 +123,7 @@ void findMapPath() {
     // append two points further in the edges
     Game::MapPathPoint point;
     point.type = Game::MapPathPoint::GROUND;
+    point.action = Game::MapPathPoint::MARCH;
     point.pos = { Game::friendlyMapPath[0].pos.x - 40.0f, Game::friendlyMapPath[0].pos.y};
     Game::friendlyMapPath.insert(Game::friendlyMapPath.begin(), point);
 
@@ -240,12 +243,44 @@ auto findNearestTarget(const Game::Soldier& soldier, const std::vector<Game::Sol
     return nearestEnemy;
 }
 
+void resetTrenches(std::vector<Game::Soldier>& soldiers) {
+    if (soldiers.size() < 1) return;
+
+    // find leftmost and rightmost soldiers
+    float minx = Game::selectedMap->width * TILE_SIZE;
+    float maxx = 0.0f;
+    std::vector<Game::Soldier>::iterator leftmost = soldiers.end();
+    std::vector<Game::Soldier>::iterator rightmost = soldiers.end();
+    for (int i = 0; i < soldiers.size(); i++) {
+        if (soldiers[i].pos.x < minx) { minx = soldiers[i].pos.x; leftmost = soldiers.begin() + i; }
+        if (soldiers[i].pos.x > maxx) { maxx = soldiers[i].pos.x; rightmost = soldiers.begin() + i; }
+    }
+
+    // if there are trenches on clear more advanced than the most advanced soldier, reset it
+    if (soldiers[0].friendly) {
+        if (rightmost != soldiers.end())
+            for (int i = 0; i < Game::friendlyMapPath.size(); i++)
+                if (Game::friendlyMapPath[i].type == Game::MapPathPoint::TRENCH)
+                    if (Game::friendlyMapPath[i].action != Game::MapPathPoint::HOLD)
+                        if (Game::friendlyMapPath[i].pos.x > rightmost->pos.x + (rightmost->character->size.x / 2.0f))
+                            Game::friendlyMapPath[i].action = Game::MapPathPoint::HOLD;
+    }
+    else {
+        if (leftmost != soldiers.end())
+            for (int i = 0; i < Game::enemyMapPath.size(); i++)
+                if (Game::enemyMapPath[i].type == Game::MapPathPoint::TRENCH)
+                    if (Game::enemyMapPath[i].action != Game::MapPathPoint::HOLD)
+                        if (Game::enemyMapPath[i].pos.x < leftmost->pos.x + (leftmost->character->size.x / 2.0f))
+                            Game::enemyMapPath[i].action = Game::MapPathPoint::HOLD;
+    }
+}
+
 // targetEnemies relative to 'soldiers'
 void updateFaction(std::vector<Game::Soldier>& soldiers, const std::vector<Game::Soldier>& targetEnemies, float deltaTime) {
     for (auto it = soldiers.begin(); it < soldiers.end(); it++) {
         Game::Soldier& soldier = *it;
 
-        // soldier dies when health runs out
+        // death logic
         if (soldier.health <= 0)
             soldierDeath(it);
 
@@ -254,7 +289,7 @@ void updateFaction(std::vector<Game::Soldier>& soldiers, const std::vector<Game:
             continue;
         }
 
-        // fint target
+        // firing logic
         auto nearestTarget = findNearestTarget(soldier, targetEnemies);
 
         bool mapcheck = true;
@@ -290,12 +325,13 @@ void updateFaction(std::vector<Game::Soldier>& soldiers, const std::vector<Game:
         }
         soldier.cooldownTime -= deltaTime;
 
+        // movement logic
         mapcalc:
         if (soldier.friendly) {   // friendly
             for (int i = 1; i < Game::friendlyMapPath.size(); i++) {
                 if (Game::friendlyMapPath[i].pos.x > soldier.pos.x + (soldier.character->size.x / 2.0f)) {
                     if (mapcheck)
-                        if (Game::friendlyMapPath[i - 1].type == Game::MapPathPoint::GROUND) {
+                        if (Game::friendlyMapPath[i - 1].action == Game::MapPathPoint::MARCH) {
                             soldier.prevState = soldier.state;
                             soldier.state = Game::Soldier::MARCHING;
                         } else {
@@ -315,7 +351,7 @@ void updateFaction(std::vector<Game::Soldier>& soldiers, const std::vector<Game:
             for (int i = Game::enemyMapPath.size() - 2; i >= 0; i--) {
                 if (Game::enemyMapPath[i].pos.x < soldier.pos.x + (soldier.character->size.x / 2.0f)) {
                     if (mapcheck)
-                        if (Game::enemyMapPath[i + 1].type == Game::MapPathPoint::GROUND) {
+                        if (Game::enemyMapPath[i + 1].action == Game::MapPathPoint::MARCH) {
                             soldier.prevState = soldier.state;
                             soldier.state = Game::Soldier::MARCHING;
                         } else {
@@ -341,6 +377,8 @@ void updateFaction(std::vector<Game::Soldier>& soldiers, const std::vector<Game:
             if (abs(soldier.pos.x - Game::enemyObjective->pos.x) < TILE_SIZE)
                 Game::enemiesHoldingObjective++;
     }
+
+    resetTrenches(soldiers);
 }
 
 void gameUpdate(float deltaTime) {

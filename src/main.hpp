@@ -155,6 +155,7 @@ namespace Game {
 
     struct MapPathPoint {
         enum PointType { GROUND, TRENCH } type;
+        enum Action { MARCH, HOLD } action;
         vector pos;
     };
 
