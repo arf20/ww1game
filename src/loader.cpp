@@ -202,9 +202,33 @@ void loadCharacters() {
         if (!entryFaction.is_directory()) continue;
 
         Assets::Faction faction;
+        // name
         faction.name = entryFaction.path().filename().string();
         faction.nameNice = makeNameNice(faction.name);
+        
+        // flag
+        if (!std::filesystem::exists(entryFaction.path() / "flag.png")) {
+            std::cout << "Warning: No flag texture for " << faction.name << std::endl;
+            faction.flag = Assets::missingTextureTexture;
+            faction.flagHeight = 32;
+        }
 
+        if ((faction.flag = IMG_LoadTexture(renderer, (entryFaction.path() / "flag.png").string().c_str())) == NULL) {
+            error_img("IMG_LoadTexture failed on assets/" + faction.name + "/flag.png");
+            faction.flag = Assets::missingTextureTexture;
+            faction.flagHeight = 32;
+        }
+
+        int flagWidth = 0;
+        if (SDL_QueryTexture(faction.flag, NULL, NULL, &flagWidth, &faction.flagHeight) < 0) {
+            error_sdl("SDL_QueryTexture failed on assets/" + faction.name + "/flag.png");
+            faction.flag = Assets::missingTextureTexture;
+            faction.flagHeight = 32;
+        }
+
+        if (flagWidth != 64) std::cout << "Warning: Flag texture for for " << faction.name << " is not 64 pix wide" << std::endl;
+
+        // characters
         for (const auto& entryCharacter : std::filesystem::directory_iterator(entryFaction.path().string())) {
             if (!entryCharacter.is_directory()) continue;
 
@@ -213,6 +237,7 @@ void loadCharacters() {
             character.nameNice = makeNameNice(character.name);
             character.fireSnd = Assets::missingSoundSound;
 
+            // idle texture
             if (!std::filesystem::exists(entryCharacter.path() / "idle.png")) {
                 std::cout << "Warning: No idle texture for " << character.name << std::endl;
                 character.idle = Assets::missingTextureTexture;
@@ -231,6 +256,7 @@ void loadCharacters() {
             }
             character.size.x = width; character.size.y = height;
 
+            // check animations
             if (!std::filesystem::exists(entryCharacter.path() / "walk")) {
                 std::cout << "Warning: No walk animation for " << character.name << std::endl;
                 character.march.push_back(Assets::missingTextureTexture);
@@ -246,10 +272,12 @@ void loadCharacters() {
                 character.death.push_back(Assets::missingTextureTexture);
             }
 
+            // load animations
             loadCharacterAnimation(entryCharacter.path() / "walk", character.march);
             loadCharacterAnimation(entryCharacter.path() / "fire", character.fire);
             loadCharacterAnimation(entryCharacter.path() / "death", character.death);
 
+            // load conf
             loadCharacterConfiguration(entryCharacter.path(), character);
 
             faction.characters.push_back(character);

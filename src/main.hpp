@@ -120,6 +120,8 @@ namespace Assets {
     struct Faction {
         std::string name;
         std::string nameNice;
+        SDL_Texture* flag;  // always 64 width
+        int flagHeight;
         MusicTrack victoryMusic;
         std::vector<MusicTrack> gameplayMusic;
         std::vector<Character> characters;

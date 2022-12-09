@@ -26,7 +26,7 @@ void printAssets() {
 
     std::cout << "\tFactions [" << Assets::factions.size() << "]:" << std::endl;
     for (const Assets::Faction& f : Assets::factions) {
-        std::cout << "\t\t" << f.name << ": \"" << f.nameNice << "\" [" << f.characters.size() << "]:" << std::endl;
+        std::cout << "\t\t" << f.name << ": \"" << f.nameNice << "\" " << std::string(f.flag != Assets::missingTextureTexture ? "flag " : " ") <<  "[" << f.characters.size() << "]:" << std::endl;
         for (const Assets::Character& c : f.characters)
             std::cout << "\t\t\t" << c.name << ": \"" << c.nameNice << "\" idle walk[" << c.march.size() << "] fire[" << c.fire.size() << "] death[" << c.death.size() << "] " << c.size.x << "x" << c.size.y <<
                 " " << (c.fireSnd == Assets::missingSoundSound ? "(missing fire snd)" : "firesnd") << std::endl;

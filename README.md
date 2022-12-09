@@ -45,6 +45,7 @@ assets/
           - t_trench             #* id 't' is special for marking a trench
     - factions/                  #* factions
        - german_empire/          #  faction (naming convention is lowercase and '_' separated)
+          - flag.png             #* faction flag
           - rifleman/            #  character (lowercase)
              - properties.cfg    #* character properties, described below
              - idle.png          #* idle texture
