@@ -9,26 +9,25 @@ Language will be, of course, C++ version 17, for \<filesystem>. Built with the C
 The game engine is going to be completely separate from the game content, just like Quake.
 All the assets will be in individual PNG files, and the maps will be described by a character matrix driven text file format.
 
-Dependencies will be SDL2, SDL2_image and probably GL.
+Dependencies will be just SDL2, SDL2_image, SDL2_ttf and SDL2_mixer. But you will need some kind of a working graphical backend, like OpenGL.
 
 ## Build
 Install dependencies (debian example)
 ```
 sudo apt install build-essential cmake libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev
 ```
-As any other CMake project
+And as any CMake project
 ```
 mkdir build && cd build
 cmake ..
 make
-make install
 ```
 
 ## Run
 ```
 ./ww1game
 ```
-will be changed later
+In the future you might be able to install it
 
 ## Asset directory structure (example)
 ```
@@ -116,7 +115,7 @@ On map load, a path through the map is found, in which soldiers travel by their 
 100      # health
 ```
 
-## Global configuration
+## Global configuration (future)
 Will brobably be at /usr/local/ww1game/ or something, and the assets at /usr/local/ww1game/assets or idk
 ```
 assets/  # asset directory path
@@ -124,11 +123,3 @@ assets/  # asset directory path
 7        # animation framerate
 ```
 
-
-## Todo
-```
-British faction and maps
-Menu
-Character propieties files
-Game config file
-```
