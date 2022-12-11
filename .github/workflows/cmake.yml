@@ -36,6 +36,7 @@ jobs:
         install: >-
           base-devel
           git
+          mingw64/mingw-w64-x86_64-gcc
           mingw64/mingw-w64-x86_64-cmake
           mingw64/mingw-w64-x86_64-SDL2
           mingw64/mingw-w64-x86_64-SDL2_image
