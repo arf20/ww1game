@@ -181,6 +181,7 @@ namespace Assets {
     extern std::vector<Font> fonts;
     extern std::vector<Background> backgrounds;
     extern SDL_Texture *bulletTexture;
+    extern SDL_Texture *flagpoleTexture;
 
     extern SDL_Texture *missingTextureTexture;
     extern Mix_Chunk *missingSoundSound;

@@ -121,6 +121,20 @@ void renderMap() {
         }
     }
 
+    // render flags
+    for (int i = 0; i < Game::friendlyMapPath.size(); i++) {
+        if (Game::friendlyMapPath[i].type == Game::MapPathPoint::TRENCH && Game::friendlyMapPath[i].action == Game::MapPathPoint::MARCH) {
+            renderTexture(Assets::flagpoleTexture, TILE_SIZE, 3 * TILE_SIZE, worldOrgX + Game::friendlyMapPath[i].pos.x - (TILE_SIZE / 2), worldOrgY + Game::friendlyMapPath[i].pos.y - (3 * TILE_SIZE));
+            renderTexture(Game::friendlyFaction->flag, 2 * TILE_SIZE, Game::friendlyFaction->flagHeight, worldOrgX + Game::friendlyMapPath[i].pos.x, worldOrgY + Game::friendlyMapPath[i].pos.y - (3 * TILE_SIZE));
+        }
+    }
+    for (int i = 0; i < Game::enemyMapPath.size(); i++) {
+        if (Game::enemyMapPath[i].type == Game::MapPathPoint::TRENCH && Game::enemyMapPath[i].action == Game::MapPathPoint::MARCH) {
+            renderTexture(Assets::flagpoleTexture, TILE_SIZE, 3 * TILE_SIZE, worldOrgX + Game::enemyMapPath[i].pos.x - (TILE_SIZE / 2), worldOrgY + Game::enemyMapPath[i].pos.y - (3 * TILE_SIZE));
+            renderTexture(Game::enemyFaction->flag, 2 * TILE_SIZE, Game::friendlyFaction->flagHeight, worldOrgX + Game::enemyMapPath[i].pos.x, worldOrgY + Game::enemyMapPath[i].pos.y - (3 * TILE_SIZE));
+        }
+    }
+
     if (debug) {
         for (int i = 0; i < Game::friendlyMapPath.size() - 1; i++) {
             if (Game::friendlyMapPath[i].type == Game::MapPathPoint::GROUND) setColor(C_RED);

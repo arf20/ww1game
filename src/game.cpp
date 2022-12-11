@@ -244,7 +244,22 @@ auto findNearestTarget(const Game::Soldier& soldier, const std::vector<Game::Sol
 }
 
 void resetTrenches(std::vector<Game::Soldier>& soldiers) {
-    if (soldiers.size() < 1) return;
+    // if soldiers is empty we can't check the side of the soldiers themselves
+    if (soldiers.size() < 1) {
+        if (soldiers.data() == Game::friendlies.data()) {
+            for (int i = 0; i < Game::friendlyMapPath.size(); i++)
+                if (Game::friendlyMapPath[i].type == Game::MapPathPoint::TRENCH)
+                    if (Game::friendlyMapPath[i].action != Game::MapPathPoint::HOLD)
+                            Game::friendlyMapPath[i].action = Game::MapPathPoint::HOLD;
+        }
+        else {
+            for (int i = 0; i < Game::enemyMapPath.size(); i++)
+                if (Game::enemyMapPath[i].type == Game::MapPathPoint::TRENCH)
+                    if (Game::enemyMapPath[i].action != Game::MapPathPoint::HOLD)
+                            Game::enemyMapPath[i].action = Game::MapPathPoint::HOLD;
+        }
+        return;
+    }
 
     // find leftmost and rightmost soldiers
     float minx = Game::selectedMap->width * TILE_SIZE;

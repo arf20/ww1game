@@ -15,6 +15,7 @@ namespace Assets {
     std::vector<Font> fonts;
     std::vector<Background> backgrounds;
     SDL_Texture *bulletTexture;
+    SDL_Texture *flagpoleTexture;
 }
 
 std::string makeNameNice(std::string str) {
@@ -484,7 +485,7 @@ void loadAssets() {
     if ((Assets::missingMusicMusic = Mix_LoadMUS(ASSET_PATH "/missing_sound.ogg")) == NULL)
         exit_error_sdl("Mix_LoadMUS failed on missing_sound");
 
-    std::cout << "Loading terrains into VRAM..." << std::endl;
+    std::cout << "Loading terrains..." << std::endl;
     loadTerrains();
     std::cout << "Loading maps..." << std::endl;
     loadMaps();
@@ -505,4 +506,11 @@ void loadAssets() {
         Assets::bulletTexture = Assets::missingTextureTexture;
     }
 
+    if (!std::filesystem::exists(ASSET_PATH "/textures/flagpole.png"))
+        exit_error("Bullet texture missing");
+
+    if ((Assets::flagpoleTexture = IMG_LoadTexture(renderer, ASSET_PATH "/textures/flagpole.png")) == NULL) {
+        error_img("IMG_LoadTexture failed on assets/textures/flagpole.png");
+        Assets::flagpoleTexture = Assets::missingTextureTexture;
+    }
 }
