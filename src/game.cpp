@@ -292,6 +292,10 @@ void resetTrenches(std::vector<Game::Soldier>& soldiers) {
 
 // targetEnemies relative to 'soldiers'
 void updateFaction(std::vector<Game::Soldier>& soldiers, const std::vector<Game::Soldier>& targetEnemies, float deltaTime) {
+    if (soldiers.size() < 1) return;
+
+    int fho = 0, eho = 0;
+
     for (auto it = soldiers.begin(); it < soldiers.end(); it++) {
         Game::Soldier& soldier = *it;
 
@@ -385,22 +389,25 @@ void updateFaction(std::vector<Game::Soldier>& soldiers, const std::vector<Game:
         }
 
         if (soldier.friendly) {
-            if (abs(soldier.pos.x - Game::friendlyObjective->pos.x) < TILE_SIZE)
-                Game::friendliesHoldingbjective++;
+            if (abs((soldier.pos.x + (soldier.character->size.x / 2.0f)) - Game::friendlyObjective->pos.x) <= float(TILE_SIZE))
+                fho++;
         }
-        else
-            if (abs(soldier.pos.x - Game::enemyObjective->pos.x) < TILE_SIZE)
-                Game::enemiesHoldingObjective++;
+        else {
+            if (abs((soldier.pos.x + (soldier.character->size.x / 2.0f)) - Game::enemyObjective->pos.x) <= float(TILE_SIZE))
+                eho++;
+        }
     }
+
+    if (soldiers[0].friendly)
+        Game::friendliesHoldingbjective = fho;
+    else
+        Game::enemiesHoldingObjective = eho;
 
     resetTrenches(soldiers);
 }
 
 void gameUpdate(float deltaTime) {
     updateBullets(deltaTime);
-
-    Game::friendliesHoldingbjective = 0;
-    Game::enemiesHoldingObjective = 0;
 
     updateFaction(Game::friendlies, Game::enemies, deltaTime);
     updateFaction(Game::enemies, Game::friendlies, deltaTime);

@@ -131,7 +131,7 @@ void renderMap() {
     for (int i = 0; i < Game::enemyMapPath.size(); i++) {
         if (Game::enemyMapPath[i].type == Game::MapPathPoint::TRENCH && Game::enemyMapPath[i].action == Game::MapPathPoint::MARCH) {
             renderTexture(Assets::flagpoleTexture, TILE_SIZE, 3 * TILE_SIZE, worldOrgX + Game::enemyMapPath[i].pos.x - (TILE_SIZE / 2), worldOrgY + Game::enemyMapPath[i].pos.y - (3 * TILE_SIZE));
-            renderTexture(Game::enemyFaction->flag, 2 * TILE_SIZE, Game::friendlyFaction->flagHeight, worldOrgX + Game::enemyMapPath[i].pos.x, worldOrgY + Game::enemyMapPath[i].pos.y - (3 * TILE_SIZE));
+            renderTexture(Game::enemyFaction->flag, 2 * TILE_SIZE, Game::enemyFaction->flagHeight, worldOrgX + Game::enemyMapPath[i].pos.x, worldOrgY + Game::enemyMapPath[i].pos.y - (3 * TILE_SIZE));
         }
     }
 
