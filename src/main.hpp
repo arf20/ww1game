@@ -29,6 +29,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <iostream>
 #include <vector>
 #include <string>
+#include <cmath>
 
 // == Macros
 #define ASSET_PATH  "../assets"
