@@ -99,7 +99,7 @@ namespace Assets {
 bool run = true;
 
 float fps = 0.0f;
-std::chrono::_V2::system_clock::time_point time_prev = std::chrono::high_resolution_clock::now();
+auto time_prev = std::chrono::high_resolution_clock::now();
 long frameCounter = 0;
 int anim_div = 0;
 bool inMenu = true;
@@ -380,7 +380,7 @@ void renderLoop() {
     SDL_Event event;
     while (run) {
         //Uint32 time_now = SDL_GetTicks();
-        std::chrono::_V2::system_clock::time_point time_now = std::chrono::high_resolution_clock::now();
+        auto time_now = std::chrono::high_resolution_clock::now();
         float deltaTime = (time_now - time_prev).count() / 1000000000.0f;
         fps = (deltaTime > 0.0f) ? 1.0f / deltaTime : 1.0f;
         anim_div = std::roundl(fps / (float)ANIM_FPS);
