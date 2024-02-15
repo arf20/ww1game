@@ -14,13 +14,31 @@ jobs:
     - uses: actions/checkout@v3
     
     - name: Install dependencies
-      run: sudo apt-get update && sudo apt-get install build-essential cmake libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev
+      run: sudo apt-get update && sudo apt-get install build-essential cmake rsync libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev
       
     - name: Configure CMake
       run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+
+    - name: Package
+      run: cpack --config build/CPackConfig.cmake --verbose -G "TGZ;DEB"
+
+    - name: Upload DEB artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ww1game-linux-deb
+        path: ./*.deb
+
+    - name: Upload TGZ artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ww1game-linux-tarball
+        path: ./*.tar.gz
+
+    - name: Upload deb to repo
+      run: RSYNC_PASSWORD=${{secrets.RSYNC_REPO_PASS}} rsync -avz ./*.deb rsync://debupload@arf20.com/debupload/pool/contrib/
       
   build_windows:
     runs-on: windows-latest
@@ -51,3 +69,12 @@ jobs:
 
     - name: Build
       run: cmake --build D:\\a\\ww1game/build --config ${{env.BUILD_TYPE}}
+
+    - name: Package
+      run: cpack --config build/CPackConfig.cmake --verbose -G "ZIP"
+
+    - name: Upload ZIP artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ww1game-windows-zip
+        path: ./*.zip

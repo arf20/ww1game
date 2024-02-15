@@ -66,7 +66,7 @@ void printAssets() {
 }
 
 int main(int argc, const char **argv) {
-    std::cout << "ww1game Copyright (C) 2024 Angel Ruiz Fernandez arf20 <arf20@arf20.com>" << std::endl <<
+    std::cout << "ww1game " ARFMINESWEEPER_VERSION "-" ARFMINESWEEPER_NUM_COMMIT " Copyright (C) 2024 Angel Ruiz Fernandez arf20 <arf20@arf20.com>" << std::endl <<
         "License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>"  << std::endl <<
         "This is free software: you are free to change and redistribute it. "  << std::endl <<
         "This program comes with ABSOLUTELY NO WARRANTY."  << std::endl;
@@ -76,6 +76,8 @@ int main(int argc, const char **argv) {
     for (std::string path : (std::vector<std::string>)ASSET_SEARCH_PATHS)
         Assets::load(path);
     printAssets();
+
+    if (Assets::campaigns.size() == 0) exit_error("Error: No assets found.");
 
     Game::selectedCampaign = Assets::campaigns.end();
 

@@ -34,8 +34,9 @@
 // == Macros
 #define ASSET_SEARCH_PATHS  { \
     "../assets", \
+    "./assets", \
     "/usr/share/ww1game/assets/", \
-    "/usr/local/share/ww1game/assets/" \
+    "/usr/local/share/ww1game/assets/", \
     "/tmp/ww1game/assets/" \
 }
 
