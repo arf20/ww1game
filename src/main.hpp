@@ -1,21 +1,21 @@
 /*
-ww1game:  Generic WW1 game (?)
-main.hpp: Global header
+    ww1game:  Generic WW1 game (?)
+    main.hpp: Global header
 
-Copyright (C) 2022 Ángel Ruiz Fernandez
+    Copyright (C) 2022 Ángel Ruiz Fernandez
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #pragma once
@@ -32,7 +32,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <cmath>
 
 // == Macros
-#define ASSET_PATH  "../assets"
+#define ASSET_SEARCH_PATHS  { \
+    "../assets", \
+    "/usr/share/ww1game/assets/", \
+    "/usr/local/share/ww1game/assets/" \
+    "/tmp/ww1game/assets/" \
+}
 
 #define TILE_SIZE   32
 
@@ -243,22 +248,32 @@ extern SDL_Renderer *renderer;
 
 // == Global functions
 // Renderer
-void initSDL();
-void destroySDL();
-void renderSetup();
-void renderLoop();
+namespace Renderer {
+    void initSDL();
+    void destroySDL();
+    void setup();
+    void loop();
+}
 
 // Loader
-void loadAssets();
+namespace Assets {
+    bool load(std::string assetsPath);
+}
 
 // Game
-void soldierSpawn(const std::vector<Assets::Character>::iterator& character, bool enemy);
-void soldierDeath(const std::vector<Game::Soldier>::iterator& soldier);
-void soldierFire(const std::vector<Game::Soldier>::iterator& soldier);
-void mapSetup();
-void gameUpdate(float deltaTime);
+namespace Game {
+    void soldierSpawn(const std::vector<Assets::Character>::iterator& character, bool enemy);
+    void soldierDeath(const std::vector<Game::Soldier>::iterator& soldier);
+    void soldierFire(const std::vector<Game::Soldier>::iterator& soldier);
+    void mapSetup();
+    void update(float deltaTime);
+}
 
 // Inline util
+inline void warning(const std::string& msg) {
+    std::cout << "Warning: " << msg << std::endl;
+}
+
 inline void exit_error(const std::string& msg) {
     std::cout << msg << std::endl;
     exit(1);

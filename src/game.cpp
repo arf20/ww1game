@@ -1,21 +1,21 @@
 /*
-ww1game:  Generic WW1 game (?)
-game.cpp: Game mechanics and logic
+    ww1game:  Generic WW1 game (?)
+    game.cpp: Game mechanics and logic
 
-Copyright (C) 2022 Ángel Ruiz Fernandez
+    Copyright (C) 2022 Ángel Ruiz Fernandez
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include "main.hpp"
@@ -55,7 +55,7 @@ std::normal_distribution<double> soldierGauss(1.0, 0.1);    // variation in sold
 std::normal_distribution<double> bulletGauss(0.0, 1.0);     // aim inaccuracy
 
 // manipulate soldiers
-void soldierSpawn(const std::vector<Assets::Character>::iterator& character, bool enemy) {
+void Game::soldierSpawn(const std::vector<Assets::Character>::iterator& character, bool enemy) {
     Game::Soldier soldier;
     soldier.character = character;
     if (enemy) {
@@ -82,7 +82,7 @@ void soldierSpawn(const std::vector<Assets::Character>::iterator& character, boo
         Game::friendlies.push_back(soldier);
 }
 
-void soldierDeath(const std::vector<Game::Soldier>::iterator& soldier) {
+void Game::soldierDeath(const std::vector<Game::Soldier>::iterator& soldier) {
     if (soldier->state == Game::Soldier::DYING) return;
     soldier->state = Game::Soldier::DYING;
     soldier->frameCounter = 0;
@@ -92,7 +92,7 @@ void soldierDeath(const std::vector<Game::Soldier>::iterator& soldier) {
     else Game::enemyCasualties++;
 }
 
-void soldierFire(const std::vector<Game::Soldier>::iterator& soldier) {
+void Game::soldierFire(const std::vector<Game::Soldier>::iterator& soldier) {
     if (soldier->state == Game::Soldier::DYING) return;
     if (soldier->state == Game::Soldier::FIRING) return;
     soldier->prevState = soldier->state;
@@ -211,7 +211,7 @@ bool intersectsMap(const vector& a, const vector& b) {
 }
 
 // ============== game itself ==============
-void mapSetup() {
+void Game::mapSetup() {
     findMapPath();
     Game::selectedTerrainVariant = getTerrainVariantByName(Game::selectedMap->terrainVariantName);
     Game::friendlyFaction = getFactionByName(Game::selectedMap->friendlyFactionName);
@@ -237,13 +237,13 @@ void updateBullets(float deltaTime) {
         // soldier collision, no friendly fire
         if (bullet.fromEnemy) {
             for (Game::Soldier& soldier : Game::friendlies)
-                if ((bullet.pos.x > soldier.pos.x) && (bullet.pos.y > soldier.pos.y) && (bullet.pos.x < soldier.pos.x + soldier.character->size.x) && (bullet.pos.y < soldier.pos.y + soldier.character->size.y)) {
+                if ((soldier.state != Game::Soldier::DYING) && (bullet.pos.x > soldier.pos.x) && (bullet.pos.y > soldier.pos.y) && (bullet.pos.x < soldier.pos.x + soldier.character->size.x) && (bullet.pos.y < soldier.pos.y + soldier.character->size.y)) {
                     soldier.health -= bullet.damage;
                     Game::bullets.erase(it); break;
                 }
         } else {
             for (Game::Soldier& soldier : Game::enemies)
-                if ((bullet.pos.x > soldier.pos.x) && (bullet.pos.y > soldier.pos.y) && (bullet.pos.x < soldier.pos.x + soldier.character->size.x) && (bullet.pos.y < soldier.pos.y + soldier.character->size.y)) {
+                if ((soldier.state != Game::Soldier::DYING) && (bullet.pos.x > soldier.pos.x) && (bullet.pos.y > soldier.pos.y) && (bullet.pos.x < soldier.pos.x + soldier.character->size.x) && (bullet.pos.y < soldier.pos.y + soldier.character->size.y)) {
                     soldier.health -= bullet.damage;
                     Game::bullets.erase(it); break;
                 }
@@ -319,7 +319,7 @@ void updateFaction(std::vector<Game::Soldier>& soldiers, const std::vector<Game:
 
         // death logic
         if (soldier.health <= 0)
-            soldierDeath(it);
+            Game::soldierDeath(it);
 
         if (soldier.state == Game::Soldier::DYING) {
             if (soldier.frameCounter >= soldier.character->death.size()) soldiers.erase(it);
@@ -331,7 +331,7 @@ void updateFaction(std::vector<Game::Soldier>& soldiers, const std::vector<Game:
 
         bool mapcheck = true;
         if (nearestTarget != targetEnemies.end()) {
-            vector muzzlePoint = {soldier.pos.x + (1.0f * soldier.character->size.x / 4.0f), soldier.pos.y + (soldier.character->size.x / 3.0f)};
+            vector muzzlePoint = {soldier.pos.x + (3.0f * soldier.character->size.x / 4.0f), soldier.pos.y + (soldier.character->size.x / 3.0f)};
             vector targetPointBody = (nearestTarget->character->size / 2.0f) + nearestTarget->pos;
             vector targetPointHead = nearestTarget->pos; targetPointHead.y += nearestTarget->character->size.y / 4.0f;
 
@@ -425,7 +425,7 @@ void updateFaction(std::vector<Game::Soldier>& soldiers, const std::vector<Game:
     resetTrenches(soldiers);
 }
 
-void gameUpdate(float deltaTime) {
+void Game::update(float deltaTime) {
     updateBullets(deltaTime);
 
     updateFaction(Game::friendlies, Game::enemies, deltaTime);

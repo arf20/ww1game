@@ -1,21 +1,21 @@
 /*
-ww1game:      Generic WW1 game (?)
-renderer.cpp: Renders frames
+    ww1game:      Generic WW1 game (?)
+    renderer.cpp: Renders frames
 
-Copyright (C) 2022 Ángel Ruiz Fernandez
+    Copyright (C) 2022 Ángel Ruiz Fernandez
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include "main.hpp"
@@ -250,7 +250,7 @@ void renderMenu() {
     if (Game::selectedCampaign != Assets::campaigns.end())
         if (Game::selectedMap != Game::selectedCampaign->maps.end()) {
             inMenu = false;
-            mapSetup();
+            Game::mapSetup();
         }
 }
 
@@ -317,19 +317,19 @@ void gameKeyHandler(SDL_Keycode key) {
     // keys 1-5 spawn friendlies
     if (key >= SDLK_1 && key <= SDLK_5)
         if (key - SDLK_1 < Game::friendlyFaction->characters.size())
-            soldierSpawn(Game::friendlyFaction->characters.begin() + (key - SDLK_1), false);
+            Game::soldierSpawn(Game::friendlyFaction->characters.begin() + (key - SDLK_1), false);
     
     // keys 6-0 (top keyb numerical row) enemies
     if (key >= SDLK_6 && key <= SDLK_9)
         if (5 - (key - SDLK_6 + 1) < Game::enemyFaction->characters.size())
-            soldierSpawn(Game::enemyFaction->characters.begin() + 5 - (key - SDLK_6 + 1), true);
+            Game::soldierSpawn(Game::enemyFaction->characters.begin() + 5 - (key - SDLK_6 + 1), true);
 
     if (key == SDLK_0)
         if (Game::enemyFaction->characters.size() > 0)
-            soldierSpawn(Game::enemyFaction->characters.begin(), true);
+            Game::soldierSpawn(Game::enemyFaction->characters.begin(), true);
 }
 
-void renderSetup() {
+void Renderer::setup() {
     menuBgIdx = std::rand() % Assets::backgrounds.size();
 }
 
@@ -337,7 +337,7 @@ void render(float deltaTime) {
     if (inMenu) {
         renderMenu();
     } else {
-        gameUpdate(deltaTime);
+        Game::update(deltaTime);
 
         worldOrgY = screenHeight - (TILE_SIZE * Game::selectedMap->height);
 
@@ -374,9 +374,9 @@ void render(float deltaTime) {
 }
 
 // public functions
-void renderLoop() {
-    renderSetup();
-
+void Renderer::loop() {
+    std::cout << "Running render loop..." << std::endl;
+    
     SDL_Event event;
     while (run) {
         //Uint32 time_now = SDL_GetTicks();
@@ -411,7 +411,7 @@ void renderLoop() {
     }
 }
 
-void initSDL() {
+void Renderer::initSDL() {
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0)
         exit_error_sdl("SDL_Init failed");
 
@@ -436,7 +436,7 @@ void initSDL() {
         exit_error_sdl("Mix_OpenAudio failed");
 }
 
-void destroySDL() {
+void Renderer::destroySDL() {
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
 

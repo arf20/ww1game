@@ -1,21 +1,21 @@
 /*
-ww1game:  Generic WW1 game (?)
-main.cpp: Entry point
+    ww1game:  Generic WW1 game (?)
+    main.cpp: Entry point
 
-Copyright (C) 2022 Ángel Ruiz Fernandez
+    Copyright (C) 2022 Ángel Ruiz Fernandez
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #ifdef _WIN32
@@ -66,9 +66,15 @@ void printAssets() {
 }
 
 int main(int argc, const char **argv) {
-    initSDL();
+    std::cout << "ww1game Copyright (C) 2024 Angel Ruiz Fernandez arf20 <arf20@arf20.com>" << std::endl <<
+        "License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>"  << std::endl <<
+        "This is free software: you are free to change and redistribute it. "  << std::endl <<
+        "This program comes with ABSOLUTELY NO WARRANTY."  << std::endl;
 
-    loadAssets();
+    Renderer::initSDL();
+
+    for (std::string path : (std::vector<std::string>)ASSET_SEARCH_PATHS)
+        Assets::load(path);
     printAssets();
 
     Game::selectedCampaign = Assets::campaigns.end();
@@ -76,9 +82,10 @@ int main(int argc, const char **argv) {
     Game::friendlyFaction = Assets::factions.end();
     Game::enemyFaction = Assets::factions.end();
 
-    renderSetup();
-    renderLoop();
+    Renderer::setup();
+    Renderer::loop();
     
-    destroySDL();
+    Renderer::destroySDL();
+
     return 0;
 }

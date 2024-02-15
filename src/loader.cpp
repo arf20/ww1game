@@ -1,21 +1,21 @@
 /*
-ww1game:    Generic WW1 game (?)
-loader.cpp: Asset loading
+    ww1game:    Generic WW1 game (?)
+    loader.cpp: Asset loading
 
-Copyright (C) 2022 Ángel Ruiz Fernandez
+    Copyright (C) 2022 Ángel Ruiz Fernandez
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include "main.hpp"
@@ -46,14 +46,14 @@ std::string makeNameNice(std::string str) {
     return str;
 }
 
-void loadTerrains() {
-    if (!std::filesystem::exists(ASSET_PATH "/textures"))
+void loadTerrains(std::string assetPath) {
+    if (!std::filesystem::exists(assetPath + "/textures"))
         exit_error("Textures directory does not exist");
 
-    if (!std::filesystem::exists(ASSET_PATH "/textures/terrain"))
+    if (!std::filesystem::exists(assetPath + "/textures/terrain"))
         exit_error("Terrain directory does not exist");
 
-    for (const auto& entryVariant : std::filesystem::directory_iterator(ASSET_PATH "/textures/terrain")) {
+    for (const auto& entryVariant : std::filesystem::directory_iterator(assetPath + "/textures/terrain")) {
         if (!entryVariant.is_directory()) continue;
 
         Assets::TerrainVariant variant;
@@ -86,11 +86,11 @@ bool sortMaps(const Assets::Map& a, const Assets::Map& b) {
     return a.id < b.id;
 }
 
-void loadMaps() {
-    if (!std::filesystem::exists(ASSET_PATH "/campaigns"))
+void loadMaps(std::string assetPath) {
+    if (!std::filesystem::exists(assetPath + "/campaigns"))
         exit_error("Terrain directory does not exist");
 
-    for (const auto& entryCampaign : std::filesystem::directory_iterator(ASSET_PATH "/campaigns")) {
+    for (const auto& entryCampaign : std::filesystem::directory_iterator(assetPath + "/campaigns")) {
         if (!entryCampaign.is_directory()) continue;
 
         Assets::Campaign campaign;
@@ -215,11 +215,11 @@ void loadCharacterConfiguration(const std::filesystem::path& path, Assets::Chara
     }
 }
 
-void loadCharacters() {
-    if (!std::filesystem::exists(ASSET_PATH "/textures/factions"))
+void loadCharacters(std::string assetPath) {
+    if (!std::filesystem::exists(assetPath + "/textures/factions"))
         exit_error("Terrain directory does not exist");
 
-    for (const auto& entryFaction : std::filesystem::directory_iterator(ASSET_PATH "/textures/factions")) {
+    for (const auto& entryFaction : std::filesystem::directory_iterator(assetPath + "/textures/factions")) {
         if (!entryFaction.is_directory()) continue;
 
         Assets::Faction faction;
@@ -308,11 +308,11 @@ void loadCharacters() {
     }
 }
 
-void loadFonts() {
-    if (!std::filesystem::exists(ASSET_PATH "/fonts"))
+void loadFonts(std::string assetPath) {
+    if (!std::filesystem::exists(assetPath + "/fonts"))
         exit_error("Fonts directory does not exist");
 
-    for (const auto& entryFont : std::filesystem::directory_iterator(ASSET_PATH "/fonts")) {
+    for (const auto& entryFont : std::filesystem::directory_iterator(assetPath + "/fonts")) {
         if (!entryFont.is_regular_file()) continue;
         if (entryFont.path().extension() != ".ttf") continue;
 
@@ -332,17 +332,17 @@ void loadFonts() {
         if (Assets::fonts[i].name == "default") Assets::defaultFont = Assets::fonts.begin() + i;
 }
 
-void loadSounds() {
-    if (!std::filesystem::exists(ASSET_PATH "/sounds"))
+void loadSounds(std::string assetPath) {
+    if (!std::filesystem::exists(assetPath + "/sounds"))
         exit_error("Sounds directory does not exist");
 
-    if (!std::filesystem::exists(ASSET_PATH "/sounds/sfx"))
+    if (!std::filesystem::exists(assetPath + "/sounds/sfx"))
         exit_error("Sfx directory does not exist");
 
-    if (!std::filesystem::exists(ASSET_PATH "/sounds/sfx/factions"))
+    if (!std::filesystem::exists(assetPath + "/sounds/sfx/factions"))
         exit_error("Sfx/factions directory does not exist");
 
-    for (const auto& entryFaction : std::filesystem::directory_iterator(ASSET_PATH "/sounds/sfx/factions")) {
+    for (const auto& entryFaction : std::filesystem::directory_iterator(assetPath + "/sounds/sfx/factions")) {
         if (!entryFaction.is_directory()) continue;
         std::string factionName = entryFaction.path().filename().string();
         auto faction = getFactionByName(factionName);
@@ -375,13 +375,13 @@ void loadSounds() {
         }
     }
 
-    if (!std::filesystem::exists(ASSET_PATH "/sounds/music"))
+    if (!std::filesystem::exists(assetPath + "/sounds/music"))
         exit_error("Music directory does not exist");
 
-    if (!std::filesystem::exists(ASSET_PATH "/sounds/music/factions"))
+    if (!std::filesystem::exists(assetPath + "/sounds/music/factions"))
         exit_error("Music/factions directory does not exist");
 
-    for (const auto& entryFaction : std::filesystem::directory_iterator(ASSET_PATH "/sounds/music/factions")) {
+    for (const auto& entryFaction : std::filesystem::directory_iterator(assetPath + "/sounds/music/factions")) {
         if (!entryFaction.is_directory()) continue;
         std::string factionName = entryFaction.path().filename().string();
         auto faction = getFactionByName(factionName);
@@ -452,11 +452,11 @@ SDL_Color getPixel(SDL_Surface *surface, int x, int y) {
     return rgb;
 }
 
-void loadBackgrounds() {
-    if (!std::filesystem::exists(ASSET_PATH "/textures/backgrounds"))
+void loadBackgrounds(std::string assetPath) {
+    if (!std::filesystem::exists(assetPath + "/textures/backgrounds"))
         exit_error("Backgrounds directory does not exist");
 
-    for (const auto& entryBackground : std::filesystem::directory_iterator(ASSET_PATH "/textures/backgrounds")) {
+    for (const auto& entryBackground : std::filesystem::directory_iterator(assetPath + "/textures/backgrounds")) {
         if (!entryBackground.is_regular_file()) continue;
         if (entryBackground.path().extension() != ".png") continue;
 
@@ -486,51 +486,56 @@ void loadBackgrounds() {
     }
 }
 
-void loadAssets() {
-    if (!std::filesystem::exists(ASSET_PATH))
-        exit_error("Asset directory does not exist");
+bool Assets::load(std::string assetPath) {
+    if (!std::filesystem::exists(assetPath)) {
+        warning("Asset directory " + assetPath + " does not exist");
+        return true;
+    }
 
-    if (!std::filesystem::exists(ASSET_PATH "/missing_texture.png"))
-        exit_error("Missing texture placeholder texture missing");
+    // Load placeholders
+    if (!std::filesystem::exists(assetPath + "/missing_texture.png"))
+        warning("Missing texture placeholder texture missing");
 
-    if ((Assets::missingTextureTexture = IMG_LoadTexture(renderer, ASSET_PATH "/missing_texture.png")) == NULL)
-        exit_error_img("IMG_LoadTexture failed on missing_texture");
+    if ((Assets::missingTextureTexture = IMG_LoadTexture(renderer, (assetPath + "/missing_texture.png").c_str())) == NULL)
+        error_img("IMG_LoadTexture failed on missing_texture");
 
-    if (!std::filesystem::exists(ASSET_PATH "/missing_sound.ogg"))
-        exit_error("Missing sound placeholder texture missing");
+    if (!std::filesystem::exists(assetPath + "/missing_sound.ogg"))
+        warning("Missing sound placeholder texture missing");
 
-    if ((Assets::missingSoundSound = Mix_LoadWAV(ASSET_PATH "/missing_sound.ogg")) == NULL)
-        exit_error_sdl("Mix_LoadWAV failed on missing_sound");
+    if ((Assets::missingSoundSound = Mix_LoadWAV((assetPath + "/missing_sound.ogg").c_str())) == NULL)
+        warning("Mix_LoadWAV failed on missing_sound");
 
-    if ((Assets::missingMusicMusic = Mix_LoadMUS(ASSET_PATH "/missing_sound.ogg")) == NULL)
-        exit_error_sdl("Mix_LoadMUS failed on missing_sound");
+    if ((Assets::missingMusicMusic = Mix_LoadMUS((assetPath + "/missing_sound.ogg").c_str())) == NULL)
+        warning("Mix_LoadMUS failed on missing_sound");
 
     std::cout << "Loading terrains..." << std::endl;
-    loadTerrains();
+    loadTerrains(assetPath);
     std::cout << "Loading maps..." << std::endl;
-    loadMaps();
+    loadMaps(assetPath);
     std::cout << "Loading characters..." << std::endl;
-    loadCharacters();
+    loadCharacters(assetPath);
     std::cout << "Loading fonts..." << std::endl;
-    loadFonts();
+    loadFonts(assetPath);
     std::cout << "Loading sounds..." << std::endl;
-    loadSounds();
+    loadSounds(assetPath);
     std::cout << "Loading backgrounds..." << std::endl;
-    loadBackgrounds();
+    loadBackgrounds(assetPath);
 
-    if (!std::filesystem::exists(ASSET_PATH "/textures/bullet.png"))
-        exit_error("Bullet texture missing");
+    if (!std::filesystem::exists(assetPath + "/textures/bullet.png"))
+        warning("Bullet texture missing");
 
-    if ((Assets::bulletTexture = IMG_LoadTexture(renderer, ASSET_PATH "/textures/bullet.png")) == NULL) {
+    if ((Assets::bulletTexture = IMG_LoadTexture(renderer, (assetPath + "/textures/bullet.png").c_str())) == NULL) {
         error_img("IMG_LoadTexture failed on assets/textures/bullet.png");
         Assets::bulletTexture = Assets::missingTextureTexture;
     }
 
-    if (!std::filesystem::exists(ASSET_PATH "/textures/flagpole.png"))
-        exit_error("Bullet texture missing");
+    if (!std::filesystem::exists(assetPath + "/textures/flagpole.png"))
+        warning("Bullet texture missing");
 
-    if ((Assets::flagpoleTexture = IMG_LoadTexture(renderer, ASSET_PATH "/textures/flagpole.png")) == NULL) {
+    if ((Assets::flagpoleTexture = IMG_LoadTexture(renderer, (assetPath + "/textures/flagpole.png").c_str())) == NULL) {
         error_img("IMG_LoadTexture failed on assets/textures/flagpole.png");
         Assets::flagpoleTexture = Assets::missingTextureTexture;
     }
+
+    return false;
 }
