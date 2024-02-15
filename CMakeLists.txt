@@ -14,7 +14,13 @@ add_compile_definitions(ARFMINESWEEPER_NUM_COMMIT="${WW1GAME_NUM_COMMIT}")
 
 message(STATUS "Git version ${WW1GAME_VERSION}-${WW1GAME_NUM_COMMIT}")
 
-project(ww1game)
+project(
+    ww1game
+    VERSION ${WW1GAME_VERSION}
+    DESCRIPTION "Generic 2D arcade WW1 game using SDL2"
+    HOMEPAGE_URL "http://github.org/arf20/arfminesweeper"
+    LANGUAGES CXX
+)
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
@@ -33,6 +39,8 @@ file (GLOB SRC
 add_executable(ww1game ${SRC})
 
 target_link_libraries(ww1game PRIVATE Threads::Threads SDL2main SDL2 SDL2_ttf SDL2_image SDL2_mixer)
+
+set_property(TARGET ww1game PROPERTY VERSION ${WW1GAME_VERSION})
 
 install(TARGETS ww1game RUNTIME DESTINATION game COMPONENT bin)
 install(DIRECTORY assets/ DESTINATION share/ww1game/assets COMPONENT data)
